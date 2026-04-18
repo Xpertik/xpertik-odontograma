@@ -1,0 +1,68 @@
+[build-system]
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
+
+[project]
+name = "xpertik-odontograma"
+version = "0.1.0"
+description = "Custom Django Field + Widget for FDI/ISO-3950 odontograms. Capture per-tooth, per-face dental findings from Django admin or any ModelForm — no AJAX, no extra endpoints."
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+authors = [{ name = "Xpertik", email = "dev@xpertik.com" }]
+keywords = ["django", "odontograma", "dental", "fdi", "iso-3950", "healthcare"]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Environment :: Web Environment",
+  "Framework :: Django",
+  "Framework :: Django :: 4.2",
+  "Framework :: Django :: 5.0",
+  "Framework :: Django :: 5.2",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Healthcare Industry",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Scientific/Engineering :: Medical Science Apps.",
+]
+dependencies = ["Django>=4.2"]
+
+[project.optional-dependencies]
+test = ["pytest>=7", "pytest-django>=4.5", "ruff>=0.1"]
+
+[project.urls]
+Homepage = "https://github.com/xpertik/xpertik-odontograma"
+Repository = "https://github.com/xpertik/xpertik-odontograma"
+Issues = "https://github.com/xpertik/xpertik-odontograma/issues"
+Changelog = "https://github.com/xpertik/xpertik-odontograma/blob/main/CHANGELOG.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["xpertik_odontograma"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+  "xpertik_odontograma",
+  "tests",
+  "README.md",
+  "LICENSE",
+  "CHANGELOG.md",
+  "MANIFEST.in",
+  "pyproject.toml",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "tests.testproject.settings"
+python_files = ["test_*.py"]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I"]
+ignore = ["E501"]

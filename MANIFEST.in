@@ -1,0 +1,3 @@
+recursive-include xpertik_odontograma/static *
+recursive-include xpertik_odontograma/templates *
+include README.md LICENSE CHANGELOG.md
