@@ -1,1 +1,65 @@
-{# v0.1.0 placeholder — shared tooth-grid partial populated in Phase 2.7 #}
+{% load i18n %}
+{# Shared tooth-grid partial used by widget.html and widget_readonly.html. #}
+{# v0.1.0 is an HTML placeholder; v0.2.0 will replace the inner chrome with an interactive SVG. #}
+{# Expected context: widget.denticion, widget.tooth_rows, widget.estados_cara,                    #}
+{#                   widget.estados_diente, widget.readonly, widget.color_unknown.                 #}
+<div class="xp-odontograma xp-odontograma--{{ widget.denticion }}{% if widget.readonly %} xp-odontograma--readonly{% endif %}"
+     data-readonly="{% if widget.readonly %}true{% else %}false{% endif %}"
+     data-denticion="{{ widget.denticion }}">
+  <ol class="xp-tooth-grid" role="list">
+    {% for row in widget.tooth_rows %}
+      <li class="xp-tooth xp-tooth--{{ row.mode }}"
+          data-fdi="{{ row.fdi }}"
+          aria-label="{% blocktranslate with n=row.fdi %}Tooth {{ n }}{% endblocktranslate %}">
+        <span class="xp-tooth__label">{{ row.fdi }}</span>
+
+        {% if row.mode == "estado" %}
+          <span class="xp-tooth__estado"
+                data-estado="{{ row.estado_key|default_if_none:'' }}"
+                style="background-color: {{ row.estado_color|default:widget.color_unknown }};"
+                title="{{ row.estado_label|default:row.estado_key }}">
+            {{ row.estado_label|default:row.estado_key }}
+          </span>
+          {% if row.causa %}
+            <span class="xp-tooth__causa" data-causa="{{ row.causa }}">({{ row.causa }})</span>
+          {% endif %}
+          {% if not widget.readonly %}
+            <select name="xp-estado-{{ row.fdi_str }}"
+                    class="xp-tooth__estado-select"
+                    data-fdi="{{ row.fdi_str }}"
+                    data-role="estado">
+              <option value="">{% translate "— sin estado —" %}</option>
+              {% for key, def in widget.estados_diente.items %}
+                <option value="{{ key }}"{% if key == row.estado_key %} selected{% endif %}>{{ def.label }}</option>
+              {% endfor %}
+            </select>
+          {% endif %}
+        {% else %}
+          <ul class="xp-tooth__faces" role="list">
+            {% for face in row.faces %}
+              <li class="xp-tooth__face xp-tooth__face--{{ face.key }}"
+                  data-face="{{ face.key }}"
+                  data-value="{{ face.value|default_if_none:'' }}"
+                  style="{% if face.color %}background-color: {{ face.color }};{% endif %}"
+                  title="{{ face.label }}{% if face.state_label %}: {{ face.state_label }}{% endif %}">
+                <span class="xp-tooth__face-label">{{ face.label }}</span>
+                {% if not widget.readonly %}
+                  <select name="xp-face-{{ row.fdi_str }}-{{ face.key }}"
+                          class="xp-tooth__face-select"
+                          data-fdi="{{ row.fdi_str }}"
+                          data-face="{{ face.key }}"
+                          data-role="face">
+                    <option value="">{% translate "— sin hallazgo —" %}</option>
+                    {% for key, def in widget.estados_cara.items %}
+                      <option value="{{ key }}"{% if key == face.value %} selected{% endif %}>{{ def.label }}</option>
+                    {% endfor %}
+                  </select>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ol>
+</div>

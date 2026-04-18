@@ -1,0 +1,151 @@
+/* xpertik-odontograma v0.1.0 placeholder styles.
+ * v0.2.0 will replace this with the real SVG layout.
+ * Scope: class selectors only, no resets, no !important.
+ */
+
+.xp-odontograma {
+  --xp-border: #cfd8dc;
+  --xp-tooth-bg: #fafafa;
+  --xp-face-bg: #ffffff;
+  --xp-text: #263238;
+  --xp-gap: 4px;
+  --xp-tooth-size: 56px;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--xp-text);
+  padding: 12px;
+  border: 1px solid var(--xp-border);
+  border-radius: 6px;
+  background: #ffffff;
+}
+
+.xp-odontograma--readonly {
+  background: #fcfcfc;
+}
+
+/* Permanent: 32 teeth laid out as 2 rows of 16. */
+.xp-odontograma--permanente .xp-tooth-grid {
+  grid-template-columns: repeat(16, minmax(var(--xp-tooth-size), 1fr));
+  grid-template-rows: repeat(2, auto);
+}
+
+/* Primary: 20 teeth laid out as 2 rows of 10. */
+.xp-odontograma--temporal .xp-tooth-grid {
+  grid-template-columns: repeat(10, minmax(var(--xp-tooth-size), 1fr));
+  grid-template-rows: repeat(2, auto);
+}
+
+/* Mixed: 52 teeth laid out as 4 rows of 16 (upper-perm, upper-prim / lower-prim, lower-perm).
+ * v0.1.0 wraps naturally — v0.2 will position per quadrant. */
+.xp-odontograma--mixta .xp-tooth-grid {
+  grid-template-columns: repeat(16, minmax(var(--xp-tooth-size), 1fr));
+}
+
+.xp-tooth-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--xp-gap);
+}
+
+.xp-tooth {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid var(--xp-border);
+  border-radius: 4px;
+  background: var(--xp-tooth-bg);
+  padding: 4px;
+  min-height: var(--xp-tooth-size);
+}
+
+.xp-tooth__label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.xp-tooth__estado {
+  display: inline-block;
+  width: 100%;
+  padding: 4px 2px;
+  border-radius: 3px;
+  font-size: 10px;
+  text-align: center;
+  color: #ffffff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.xp-tooth__causa {
+  font-size: 9px;
+  color: #546e7a;
+  margin-top: 2px;
+}
+
+.xp-tooth__faces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-areas:
+    "ov    ov"
+    "mes   dis"
+    "vest  lin";
+  gap: 2px;
+  width: 100%;
+}
+
+.xp-tooth__face {
+  min-height: 14px;
+  font-size: 9px;
+  border: 1px solid var(--xp-border);
+  border-radius: 2px;
+  background: var(--xp-face-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: 2px;
+}
+
+.xp-tooth__face--oclusal_incisal { grid-area: ov; }
+.xp-tooth__face--mesial           { grid-area: mes; }
+.xp-tooth__face--distal           { grid-area: dis; }
+.xp-tooth__face--vestibular_bucal { grid-area: vest; }
+.xp-tooth__face--lingual_palatino { grid-area: lin; }
+
+.xp-tooth__face-label {
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  opacity: 0.75;
+}
+
+.xp-tooth__face-select,
+.xp-tooth__estado-select {
+  width: 100%;
+  font-size: 10px;
+  margin-top: 2px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--xp-border);
+  border-radius: 2px;
+}
+
+/* Readonly: hide the <select>s explicitly (template already omits them, but
+ * guard against CSS-only consumers). */
+.xp-odontograma--readonly .xp-tooth__face-select,
+.xp-odontograma--readonly .xp-tooth__estado-select {
+  display: none;
+}
+
+.xp-odontograma--readonly .xp-tooth__face:hover,
+.xp-odontograma--readonly .xp-tooth__estado:hover {
+  cursor: default;
+}

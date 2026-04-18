@@ -1,1 +1,6 @@
-{# v0.1.0 placeholder — readonly widget template populated in Phase 2.7 #}
+{% load i18n %}
+{# v0.1.0 placeholder — readonly rendering, no form inputs, no JS. #}
+<div class="xp-odontograma-widget xp-odontograma-widget--readonly"
+     data-denticion="{{ widget.denticion }}">
+  {% include "xpertik_odontograma/_tooth_grid.html" %}
+</div>
