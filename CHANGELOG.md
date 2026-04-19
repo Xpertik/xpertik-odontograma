@@ -5,6 +5,43 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - Unreleased
+
+### Added
+
+- **Peru profile** (`xpertik_odontograma.profiles.peru`) — opt-in data layer that enforces the Norma Técnica del Odontograma del Colegio Odontológico del Perú.
+- Profile registry system (`xpertik_odontograma.profiles.registry`) — minimal ≤30-LOC registry for country/regulatory profiles.
+- `OdontogramaPeruInicialField` — model field locked to the Peru profile, rejects `profile=` kwarg.
+- Peru catalog with **32 nomenclaturas** from clause VI.1 of the norm (26 usable in v0.2.0 + 6 cross-teeth deferred to v0.3.0). Each entry carries its `clausula_norma` for traceability.
+- `validate_peru_strict` — strict validator that rejects unknown nomenclaturas, cross-teeth anomalies (with v0.3.0 pointer), invalid parametros, and non-conformant colors.
+- HARD extension enforcement via `PeruAppConfig.ready()` — consumer `XPERTIK_ODONTOGRAMA_PROFILE_EXTENSIONS` is validated at Django startup; violations raise `ImproperlyConfigured` with Disp. V.14 citation.
+- Symbolic color system — extensions declare `color: "rojo"` or `color: "azul"`, never hex (centralizes normative values).
+- `especificaciones` JSON schema additions — per-tooth text field + top-level `especificaciones_generales` (Disp. V.9, V.10, V.11). Helpers in `xpertik_odontograma.profiles.peru.specifications`.
+- `XPERTIK_ODONTOGRAMA_PROFILE` setting — activates a profile globally for newly-declared fields (default None).
+- `XPERTIK_ODONTOGRAMA_PROFILE_EXTENSIONS` setting — dict of consumer extensions (default {}).
+- 170 new tests across 7 test files; total suite now 259 tests.
+- README section "Using the Peru profile" with activation, extension, and especificaciones examples.
+
+### Changed
+
+- `OdontogramaField` now accepts an opt-in `profile=` kwarg. When set, chains to the registered profile validator. Default `None` preserves v0.1.0 behavior byte-identically (backward compat verified by 16 dedicated regression tests).
+- `validate_odontograma_strict` accepts a keyword-only `profile=` param that dispatches via registry. Existing call sites unchanged.
+
+### Known limitations (v0.2.0 data layer, not full conformance)
+
+- UI is still the v0.1.0 placeholder grid — does not render normative graphic representations (aspas, triángulos, flechas, siglas en recuadros). Full UI conformance ships in v0.3.0.
+- Corona vs raíz not separated in the data model — still 5 caras per tooth. v0.3.0.
+- Odontograma paralela de evolución (Disp. V.4) not implemented — v0.3.0.
+- Inalterabilidad / audit trail (Disp. V.3, V.13) not implemented — v0.3.0.
+- 6 cross-teeth anomalies rejected with explicit error pointing to v0.3.0: diastema, geminación/fusión, transposición, supernumerario, aparato ortodóntico fijo/removible.
+- VI.1.24 is absent from the norm PDF (discontinuity from 1.23 to 1.25) — documented as `AUSENCIA_NORMATIVA_VI_1_24` constant.
+
+### Backward compatibility
+
+- v0.1.0 consumers NOT activating the Peru profile see ZERO behavior change. The 89 v0.1.0 tests all pass unchanged. Installing v0.2.0 over v0.1.0 requires no migrations.
+- Existing DB data under the v0.1.0 schema remains valid when no profile is active.
+- Upgrading to activate the Peru profile requires the consumer to map their v0.1.0 state keys to the Peru catalog; this is a DATA migration, documented in the Peru profile section of README.
+
 ## [0.1.0] - Unreleased
 
 ### Added
@@ -46,4 +83,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `vestibular_bucal` face key always labels as "Vestibular" in the UI. The "bucal" synonym distinction for anteriores is under clinical review for v0.2.0.
 - No `.po` translation catalogs shipped. Package defaults use `gettext_lazy`; consumer projects that need Spanish-to-another-language translation can generate catalogs themselves.
 
+[0.2.0]: https://github.com/xpertik/xpertik-odontograma/releases/tag/v0.2.0
 [0.1.0]: https://github.com/xpertik/xpertik-odontograma/releases/tag/v0.1.0
