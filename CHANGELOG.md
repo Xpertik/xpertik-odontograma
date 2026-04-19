@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ruff config with `E, W, F, I, UP, B` rule set.
 - `RELEASING.md` documenting manual Trusted Publisher setup and release cadence.
 
+### Fixed
+
+- Compacted placeholder widget tooth sizing from ~220px to ~85px per tooth so a permanent-dentition row fits in the Django admin viewport without clipping. Face labels abbreviated to single letters (V/M/O/I/D/L/P) with full names preserved as hover tooltips and `aria-label`. Chart containers also get `overflow-x: auto` as a safety net on narrower consumers; print CSS bumps teeth back up for paper legibility.
+
 ### Known limitations (intentional for v0.1.0)
 
 - Widget UI is an HTML placeholder (FDI grid + `<select>` per face). The interactive SVG is planned for v0.2.0 after clinical feedback.
