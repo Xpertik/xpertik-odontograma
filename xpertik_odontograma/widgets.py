@@ -22,9 +22,15 @@ import json
 from typing import Any
 
 from django import forms
+from django.utils.translation import gettext_lazy as _
 
 from . import settings as package_settings
-from .constants import CARAS, dientes_por_denticion, face_label
+from .constants import (
+    CARAS,
+    CAUSAS_AUSENCIA,
+    dientes_por_denticion,
+    face_label,
+)
 from .validators import sanitize_odontograma_for_render
 
 __all__ = [
@@ -105,9 +111,12 @@ class BaseOdontogramaWidget(forms.Widget):
         color_unknown = package_settings.DEFAULT_COLOR_UNKNOWN
 
         # Pre-build a list of per-tooth rows so the template doesn't need
-        # custom filters for dict-by-variable lookup. Each row carries
-        # resolved estado metadata OR resolved face rows (label + color).
-        tooth_rows: list[dict[str, Any]] = []
+        # custom filters for dict-by-variable lookup. Each row ALWAYS carries
+        # BOTH the estado block and the 5-face block so the clinical-chart
+        # template can toggle between modes without re-rendering — CSS +
+        # JS flip visibility based on ``row.mode``. The DOM carries the
+        # complete state for whichever mode the user switches to.
+        tooth_rows_by_fdi: dict[int, dict[str, Any]] = {}
         for fdi in teeth:
             fdi_str = str(fdi)
             raw_entry = current_value.get(fdi_str) if isinstance(current_value, dict) else None
@@ -116,10 +125,10 @@ class BaseOdontogramaWidget(forms.Widget):
             row: dict[str, Any] = {
                 "fdi": fdi,
                 "fdi_str": fdi_str,
-                "mode": None,
+                "mode": "caras",  # default mode when tooth is empty
                 "estado_key": None,
                 "estado_label": None,
-                "estado_color": color_unknown,
+                "estado_color": None,
                 "causa": None,
                 "faces": [],
             }
@@ -134,33 +143,90 @@ class BaseOdontogramaWidget(forms.Widget):
                     row["estado_color"] = estado_def.get("color", color_unknown)
                 else:
                     row["estado_label"] = estado_key  # unknown legacy value
+                    row["estado_color"] = color_unknown
                 row["causa"] = entry.get("causa")
             elif "caras" in entry and isinstance(entry["caras"], dict):
                 row["mode"] = "caras"
-                legacy_caras = entry["caras"]
-                for face_key in CARAS:
-                    face_value = legacy_caras.get(face_key)
-                    face_def = estados_cara.get(face_value) if face_value else None
-                    row["faces"].append({
-                        "key": face_key,
-                        "label": face_label(fdi, face_key),
-                        "value": face_value,
-                        "color": face_def.get("color", color_unknown) if face_def else color_unknown,
-                        "state_label": face_def.get("label", face_value) if face_def else face_value,
-                    })
-            else:
-                # Empty / legacy-garbage entry — render as five blank faces.
-                row["mode"] = "caras"
-                for face_key in CARAS:
-                    row["faces"].append({
-                        "key": face_key,
-                        "label": face_label(fdi, face_key),
-                        "value": None,
-                        "color": None,
-                        "state_label": None,
-                    })
 
-            tooth_rows.append(row)
+            # Always materialize the 5 face cells. When the tooth is in
+            # "estado" mode, the faces still render to the DOM but are
+            # hidden by CSS — this way the user can flip the mode toggle
+            # without losing the DOM skeleton.
+            legacy_caras = entry["caras"] if isinstance(entry.get("caras"), dict) else {}
+            for face_key in CARAS:
+                face_value = legacy_caras.get(face_key) if legacy_caras else None
+                face_def = estados_cara.get(face_value) if face_value else None
+                row["faces"].append({
+                    "key": face_key,
+                    "label": face_label(fdi, face_key),
+                    "value": face_value,
+                    "color": face_def.get("color", color_unknown) if face_def else None,
+                    "state_label": face_def.get("label", face_value) if face_def else None,
+                })
+
+            tooth_rows_by_fdi[fdi] = row
+
+        # Preserve original (input-order) row list for tests and JS.
+        tooth_rows: list[dict[str, Any]] = [tooth_rows_by_fdi[fdi] for fdi in teeth]
+
+        # --------------------------------------------------------------
+        # Clinical-chart quadrant layout (patient-facing perspective)
+        # --------------------------------------------------------------
+        # Rows are a list of "sections" each with a heading and a list of
+        # "quadrant rows". Every quadrant row has two halves separated by
+        # a midline, and each half contains the pre-resolved tooth row
+        # objects above in the correct left-to-right display order.
+
+        def _row_for(fdi: int) -> dict[str, Any] | None:
+            return tooth_rows_by_fdi.get(fdi)
+
+        def _ordered(seq: tuple[int, ...]) -> list[dict[str, Any]]:
+            return [r for fdi in seq if (r := _row_for(fdi)) is not None]
+
+        sections: list[dict[str, Any]] = []
+        if self.denticion in ("permanente", "mixta"):
+            # Permanent dentition (32 teeth) — upper = quad 1+2, lower = quad 3+4.
+            # Display order, left → right, patient-facing:
+            #   upper: 18 17 16 15 14 13 12 11 | 21 22 23 24 25 26 27 28
+            #   lower: 48 47 46 45 44 43 42 41 | 31 32 33 34 35 36 37 38
+            upper = (
+                _ordered((18, 17, 16, 15, 14, 13, 12, 11)),
+                _ordered((21, 22, 23, 24, 25, 26, 27, 28)),
+            )
+            lower = (
+                _ordered((48, 47, 46, 45, 44, 43, 42, 41)),
+                _ordered((31, 32, 33, 34, 35, 36, 37, 38)),
+            )
+            sections.append({
+                "key": "permanente",
+                "label": _("Permanente"),
+                "rows": [
+                    {"key": "superior", "label": _("Maxilar superior"), "left": upper[0], "right": upper[1]},
+                    {"key": "inferior", "label": _("Maxilar inferior"), "left": lower[0], "right": lower[1]},
+                ],
+                "cols_per_side": 8,
+            })
+        if self.denticion in ("temporal", "mixta"):
+            # Primary dentition (20 teeth):
+            #   upper: 55 54 53 52 51 | 61 62 63 64 65
+            #   lower: 85 84 83 82 81 | 71 72 73 74 75
+            upper = (
+                _ordered((55, 54, 53, 52, 51)),
+                _ordered((61, 62, 63, 64, 65)),
+            )
+            lower = (
+                _ordered((85, 84, 83, 82, 81)),
+                _ordered((71, 72, 73, 74, 75)),
+            )
+            sections.append({
+                "key": "temporal",
+                "label": _("Temporal"),
+                "rows": [
+                    {"key": "superior", "label": _("Maxilar superior"), "left": upper[0], "right": upper[1]},
+                    {"key": "inferior", "label": _("Maxilar inferior"), "left": lower[0], "right": lower[1]},
+                ],
+                "cols_per_side": 5,
+            })
 
         # Serialize the hidden-input payload once so templates don't need a
         # custom filter. Empty dict -> "{}" (valid JSON).
@@ -172,10 +238,12 @@ class BaseOdontogramaWidget(forms.Widget):
             "faces": CARAS,
             "estados_cara": estados_cara,
             "estados_diente": estados_diente,
+            "causas_ausencia": CAUSAS_AUSENCIA,
             "readonly": self.readonly,
             "current_value": current_value,
             "current_value_json": current_value_json,
             "tooth_rows": tooth_rows,
+            "sections": sections,
             "color_unknown": color_unknown,
         })
         return context
