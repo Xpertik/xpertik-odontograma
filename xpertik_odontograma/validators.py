@@ -30,7 +30,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ImproperlyConfigured, ValidationError
 from django.utils.translation import gettext_lazy as _
 
 from . import settings as package_settings
@@ -192,7 +192,12 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
             )
 
 
-def validate_odontograma_strict(value: Any, denticion: str = "permanente") -> None:
+def validate_odontograma_strict(
+    value: Any,
+    denticion: str = "permanente",
+    *,
+    profile: str | None = None,
+) -> None:
     """Strict validator for the WRITE path.
 
     Tolerates ``None`` or an empty dict (greenfield records — JSONField's
@@ -203,12 +208,20 @@ def validate_odontograma_strict(value: Any, denticion: str = "permanente") -> No
     Args:
         value: The odontograma JSON (already decoded to a Python dict).
         denticion: ``"permanente" | "temporal" | "mixta"``.
+        profile: Optional profile name to layer country-/regulation-specific
+            constraints on top of the base invariants. ``None`` (the default)
+            keeps v0.1.0 behavior byte-identical (REQ-7.1). Unknown profile
+            names raise :class:`~django.core.exceptions.ImproperlyConfigured`.
 
     Raises:
         ValidationError: Collecting every invalid entry.
+        ImproperlyConfigured: When ``profile`` is non-None and no hook is
+            registered for it.
     """
     # Empty odontograms are valid (JSONField default = dict()).
     if value is None or value == {}:
+        if profile is not None:
+            _dispatch_profile(profile, value, denticion)
         return
 
     if not isinstance(value, dict):
@@ -220,6 +233,10 @@ def validate_odontograma_strict(value: Any, denticion: str = "permanente") -> No
 
     errors: list[ValidationError] = []
     for code, entry in value.items():
+        # Top-level profile-owned keys (e.g. especificaciones_generales) are
+        # handed off to the profile layer below; the base loop ignores them.
+        if code == "especificaciones_generales":
+            continue
         try:
             validate_tooth_entry(code, entry, denticion)
         except ValidationError as exc:
@@ -227,6 +244,24 @@ def validate_odontograma_strict(value: Any, denticion: str = "permanente") -> No
 
     if errors:
         raise ValidationError(errors)
+
+    if profile is not None:
+        _dispatch_profile(profile, value, denticion)
+
+
+def _dispatch_profile(profile: str, value: Any, denticion: str) -> None:
+    """Chain a registered profile validator after the base invariants pass."""
+    # Lazy import avoids a circular dependency with the profiles package.
+    from .profiles import get as _get_profile
+
+    hook = _get_profile(profile)
+    if hook is None:
+        raise ImproperlyConfigured(
+            f"xpertik_odontograma: profile {profile!r} is not registered. "
+            f"Add its app to INSTALLED_APPS (or call profiles.register(...)) "
+            f"before validating."
+        )
+    hook(value, denticion)
 
 
 # ---------------------------------------------------------------------------
@@ -239,37 +274,52 @@ class _FieldBoundValidator:
 
     Django's validator contract is ``def __call__(value)`` — a single
     argument — so we bind the denticion as instance state. Instances are
-    equal iff their ``denticion`` matches, which keeps Django's migration
-    autodetector from flagging spurious field changes when the field is
-    re-instantiated with the same denticion.
+    equal iff their ``denticion`` (and optional ``profile``) match, which
+    keeps Django's migration autodetector from flagging spurious field
+    changes when the field is re-instantiated with the same parameters.
+
+    The ``profile`` kwarg is strictly additive: when omitted/``None``,
+    :meth:`deconstruct`'s kwargs dict stays empty so v0.1.0 migrations
+    remain byte-stable after upgrading to v0.2.0 (REQ-7.4 / R4).
     """
 
-    __slots__ = ("denticion",)
+    __slots__ = ("denticion", "profile")
 
-    def __init__(self, denticion: str) -> None:
+    def __init__(self, denticion: str, *, profile: str | None = None) -> None:
         self.denticion = denticion
+        self.profile = profile
 
     def __call__(self, value: Any) -> None:
-        validate_odontograma_strict(value, self.denticion)
+        validate_odontograma_strict(value, self.denticion, profile=self.profile)
 
     # --- Equality + hash keep migration autodetect stable ------------------
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, _FieldBoundValidator):
             return NotImplemented
-        return self.denticion == other.denticion
+        return self.denticion == other.denticion and self.profile == other.profile
 
     def __hash__(self) -> int:
-        return hash(("_FieldBoundValidator", self.denticion))
+        return hash(("_FieldBoundValidator", self.denticion, self.profile))
 
     def __repr__(self) -> str:
-        return f"_FieldBoundValidator(denticion={self.denticion!r})"
+        if self.profile is None:
+            return f"_FieldBoundValidator(denticion={self.denticion!r})"
+        return (
+            f"_FieldBoundValidator(denticion={self.denticion!r}, "
+            f"profile={self.profile!r})"
+        )
 
     # --- Django migration support ------------------------------------------
     def deconstruct(self) -> tuple[str, tuple, dict]:
+        # REQ-7.4 / R4: omit `profile` from kwargs when None so v0.1.0
+        # migrations remain byte-identical after upgrading.
+        kwargs: dict[str, Any] = {}
+        if self.profile is not None:
+            kwargs["profile"] = self.profile
         return (
             "xpertik_odontograma.validators._FieldBoundValidator",
             (self.denticion,),
-            {},
+            kwargs,
         )
 
 

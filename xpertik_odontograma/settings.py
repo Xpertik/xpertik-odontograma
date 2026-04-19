@@ -23,6 +23,8 @@ __all__ = [
     "DEFAULT_COLOR_UNKNOWN",
     "ESTADOS_CARA",
     "ESTADOS_DIENTE",
+    "PROFILE",
+    "PROFILE_EXTENSIONS",
 ]
 
 
@@ -98,3 +100,19 @@ ESTADOS_DIENTE: dict[str, dict[str, object]] = {
     **DEFAULT_ESTADOS_DIENTE,
     **getattr(django_settings, "XPERTIK_ODONTOGRAMA_ESTADOS_DIENTE", {}),
 }
+
+
+# ---------------------------------------------------------------------------
+# Profile activation (v0.2.0+)
+# ---------------------------------------------------------------------------
+
+# REQ-9.1: optional global profile name (e.g. ``"peru"``). ``None`` keeps
+# v0.1.0 behavior — no profile layer runs.
+PROFILE: str | None = getattr(django_settings, "XPERTIK_ODONTOGRAMA_PROFILE", None)
+
+# REQ-9.2: per-profile extension catalogs (e.g. ``{"peru": {...}}``). Each
+# profile's ``AppConfig.ready()`` is responsible for validating its own
+# extension dict; the base package only exposes the raw value.
+PROFILE_EXTENSIONS: dict = getattr(
+    django_settings, "XPERTIK_ODONTOGRAMA_PROFILE_EXTENSIONS", {}
+)
