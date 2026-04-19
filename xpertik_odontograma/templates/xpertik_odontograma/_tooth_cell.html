@@ -41,7 +41,8 @@
            data-value="{{ face.value|default_if_none:'' }}"
            {% if face.color %}style="background-color: {{ face.color }};"{% endif %}
            title="{{ face.label }}{% if face.state_label %}: {{ face.state_label }}{% endif %}">
-        <span class="xp-tooth__face-label">{{ face.label }}</span>
+        <span class="xp-tooth__face-label"
+              aria-label="{{ face.label }}">{{ face.label|slice:":1" }}</span>
         {% if face.state_label %}
           <span class="xp-tooth__face-value">{{ face.state_label }}</span>
         {% endif %}

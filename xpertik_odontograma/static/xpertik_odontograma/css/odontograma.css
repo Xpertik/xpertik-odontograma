@@ -4,6 +4,10 @@
  * lingual/palatino at the bottom). Quadrants are separated by a midline.
  * v0.2.0 will replace this with the real SVG layout.
  *
+ * Sizing: tuned so a row of 16 permanent teeth fits inside a ~1440px
+ * Django admin content area. Tooth cell ~85px wide, gaps 2px, single-
+ * letter face labels (V/M/O/I/D/L/P) with full names in `title` attrs.
+ *
  * Scope: class selectors only, no resets, no !important.
  * All rules scoped under `.xp-odontograma*` to avoid fighting Django admin CSS.
  */
@@ -16,19 +20,19 @@
   --xp-text: #263238;
   --xp-muted: #607d8b;
   --xp-accent: #1565c0;
-  --xp-gap: 3px;
-  --xp-tooth-size-perm: 72px;
-  --xp-tooth-size-temp: 60px;
+  --xp-gap: 2px;
+  --xp-tooth-size-perm: 85px;
+  --xp-tooth-size-temp: 85px;
 
   display: block;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--xp-text);
-  font-size: 13px;
-  line-height: 1.2;
+  font-size: 12px;
+  line-height: 1.15;
 }
 
 .xp-odontograma {
-  padding: 12px;
+  padding: 8px;
   border: 1px solid var(--xp-border-soft);
   border-radius: 6px;
   background: #ffffff;
@@ -42,12 +46,12 @@
 /* ----- Sections (used by mixta: permanente + temporal stacked) ----- */
 
 .xp-odontograma__section + .xp-odontograma__section {
-  margin-top: 18px;
+  margin-top: 14px;
 }
 
 .xp-odontograma__section-title {
-  margin: 0 0 6px 0;
-  font-size: 13px;
+  margin: 0 0 4px 0;
+  font-size: 12px;
   font-weight: 600;
   color: var(--xp-muted);
   text-transform: uppercase;
@@ -59,8 +63,9 @@
 .xp-odontograma__chart {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   min-width: max-content;
+  overflow-x: auto;
 }
 
 .xp-odontograma__row {
@@ -88,8 +93,8 @@
 /* Midline: thin vertical separator between quadrants. */
 .xp-odontograma__midline {
   width: 0;
-  border-left: 2px dashed var(--xp-border);
-  margin: 4px 6px;
+  border-left: 1px dashed var(--xp-border);
+  margin: 2px 4px;
   flex: 0 0 auto;
 }
 
@@ -99,10 +104,10 @@
   position: relative;
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 2px;
-  padding: 3px;
+  gap: 1px;
+  padding: 2px;
   border: 1px solid var(--xp-border-soft);
-  border-radius: 4px;
+  border-radius: 3px;
   background: var(--xp-tooth-bg);
   min-width: 0;
 }
@@ -114,8 +119,8 @@
 /* Mode toggle (tiny "Caras / Estado" radio pair at the top of each tooth). */
 .xp-tooth__mode-toggle {
   display: flex;
-  gap: 2px;
-  font-size: 9px;
+  gap: 1px;
+  font-size: 8px;
   line-height: 1;
   color: var(--xp-muted);
 }
@@ -124,8 +129,9 @@
   flex: 1 1 0;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 1px 2px;
+  justify-content: center;
+  gap: 1px;
+  padding: 1px 1px;
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
   background: #eceff1;
@@ -136,7 +142,7 @@
 
 .xp-tooth__mode-option input {
   margin: 0;
-  transform: scale(0.85);
+  transform: scale(0.75);
 }
 
 .xp-tooth__mode-option span {
@@ -149,7 +155,7 @@
 
 .xp-tooth__faces {
   display: grid;
-  grid-template-columns: 1fr 1.2fr 1fr;
+  grid-template-columns: 1fr 1.1fr 1fr;
   grid-template-rows: auto 1fr auto;
   grid-template-areas:
     "v v v"
@@ -159,7 +165,7 @@
   background: var(--xp-border-soft);
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
-  min-height: 48px;
+  min-height: 44px;
 }
 
 .xp-tooth__face {
@@ -169,23 +175,24 @@
   align-items: center;
   justify-content: center;
   background: var(--xp-face-bg);
-  padding: 2px 1px;
+  padding: 1px 1px;
   min-width: 0;
-  min-height: 16px;
+  min-height: 14px;
   overflow: hidden;
   text-align: center;
 }
 
 .xp-tooth__face--vestibular_bucal { grid-area: v; }
 .xp-tooth__face--mesial           { grid-area: m; }
-.xp-tooth__face--oclusal_incisal  { grid-area: o; min-height: 22px; }
+.xp-tooth__face--oclusal_incisal  { grid-area: o; min-height: 20px; }
 .xp-tooth__face--distal           { grid-area: d; }
 .xp-tooth__face--lingual_palatino { grid-area: l; }
 
 .xp-tooth__face-label {
   font-size: 8px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.2px;
   color: var(--xp-muted);
   line-height: 1;
 }
@@ -194,11 +201,11 @@
   /* When the face has a state color, darken the label text so it remains
    * legible on top of the colored background regardless of hue. */
   color: rgba(0, 0, 0, 0.72);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .xp-tooth__face-value {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 600;
   color: rgba(0, 0, 0, 0.82);
   line-height: 1;
@@ -211,15 +218,18 @@
 /* Inline per-face <select> — compact, always visible (no JS popover needed). */
 .xp-tooth__face-select {
   width: 100%;
-  margin-top: 2px;
-  padding: 0;
-  font-size: 10px;
+  margin-top: 1px;
+  padding: 2px 4px;
+  font-size: 11px;
   line-height: 1.1;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
   color: var(--xp-text);
   min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Hide native focus ring inside admin field; preserve accessible focus. */
@@ -235,8 +245,8 @@
 .xp-tooth__estado-block {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  min-height: 48px;
+  gap: 1px;
+  min-height: 44px;
 }
 
 .xp-tooth__estado {
@@ -245,7 +255,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 2px;
+  padding: 1px;
   border-radius: 2px;
   background: var(--xp-face-bg);
   color: rgba(0, 0, 0, 0.82);
@@ -258,7 +268,7 @@
 }
 
 .xp-tooth__estado-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -267,7 +277,7 @@
 }
 
 .xp-tooth__causa {
-  font-size: 9px;
+  font-size: 8px;
   color: rgba(0, 0, 0, 0.65);
   margin-top: 1px;
 }
@@ -275,14 +285,15 @@
 .xp-tooth__estado-select,
 .xp-tooth__causa-select {
   width: 100%;
-  padding: 0;
-  font-size: 10px;
+  padding: 2px 4px;
+  font-size: 11px;
   line-height: 1.1;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
   color: var(--xp-text);
   min-width: 0;
+  max-width: 100%;
 }
 
 /* Causa <select> is only relevant when estado == ausente. Hide by default;
@@ -308,9 +319,9 @@
 /* ----- FDI code label (bottom of each tooth) ----- */
 
 .xp-tooth__fdi {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
   color: var(--xp-muted);
   text-align: center;
   border-top: 1px solid var(--xp-border-soft);
@@ -344,11 +355,19 @@
   border-radius: 3px;
 }
 
-/* ----- Print-friendly ----- */
+/* ----- Print-friendly: teeth slightly larger for paper legibility. ----- */
 
 @media print {
   .xp-odontograma-widget {
+    --xp-tooth-size-perm: 96px;
+    --xp-tooth-size-temp: 96px;
     font-size: 11px;
+  }
+  .xp-odontograma {
+    overflow: visible;
+  }
+  .xp-odontograma__chart {
+    overflow: visible;
   }
   .xp-tooth__mode-toggle,
   .xp-tooth__face-select,
