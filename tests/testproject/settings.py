@@ -17,8 +17,19 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.staticfiles",
     "xpertik_odontograma",
+    # v0.2.0: the peru profile registers its validator hook via AppConfig.ready().
+    # Adding it here activates OdontogramaPeruInicialField for the `tests` app
+    # models without forcing a global XPERTIK_ODONTOGRAMA_PROFILE = "peru" setting
+    # (which would affect the v0.1 Patient model's backward-compat tests).
+    "xpertik_odontograma.profiles.peru",
     "tests",  # our test-only models live here
 ]
+
+# Intentionally left unset: keep the global profile default to None so the v0.1.0
+# `Patient` model (which uses bare `OdontogramaField`) preserves byte-identical
+# v0.1.0 behavior (REQ-7.1). The peru-specific tests use `OdontogramaPeruInicialField`
+# which locks `profile="peru"` at the class level.
+# XPERTIK_ODONTOGRAMA_PROFILE = "peru"
 
 DATABASES = {
     "default": {
