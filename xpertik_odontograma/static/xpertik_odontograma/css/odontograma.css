@@ -100,31 +100,40 @@
   flex: 0 0 auto;
 }
 
-/* ----- Tooth cell ----- */
+/* ----- Tooth cell -----
+ * Flex column so every band (toggle, faces, estado, fdi) gets its own slice
+ * and none of them collapse. overflow stays `visible` here — clipping should
+ * only happen inside the <select>s, never at the tooth boundary.
+ */
 
 .xp-tooth {
   position: relative;
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  gap: 1px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   padding: 2px;
   border: 1px solid var(--xp-border-soft);
   border-radius: 3px;
   background: var(--xp-tooth-bg);
   min-width: 0;
+  overflow: visible;
 }
 
 .xp-odontograma__chart--temporal .xp-tooth {
   font-size: 11px;
 }
 
-/* Mode toggle (tiny "Caras / Estado" radio pair at the top of each tooth). */
+/* Mode toggle (tiny "Caras / Estado" radio pair at the top of each tooth).
+ * Sized so both full labels fit side-by-side inside the 85px tooth without
+ * truncation. Radios are shrunk via `accent-color` + tiny width.
+ */
 .xp-tooth__mode-toggle {
   display: flex;
-  gap: 1px;
-  font-size: 8px;
+  gap: 2px;
+  font-size: 9px;
   line-height: 1;
   color: var(--xp-muted);
+  flex: 0 0 auto;
 }
 
 .xp-tooth__mode-option {
@@ -132,22 +141,26 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  padding: 1px 1px;
+  gap: 2px;
+  padding: 1px 2px;
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
   background: #eceff1;
   cursor: pointer;
   min-width: 0;
-  overflow: hidden;
 }
 
 .xp-tooth__mode-option input {
   margin: 0;
-  transform: scale(0.75);
+  flex: 0 0 auto;
+  width: 9px;
+  height: 9px;
+  accent-color: var(--xp-accent);
 }
 
 .xp-tooth__mode-option span {
+  flex: 0 1 auto;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -167,36 +180,40 @@
   background: var(--xp-border-soft);
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
-  min-height: 44px;
+  min-height: 80px;
+  flex: 1 1 auto;
 }
 
 .xp-tooth__face {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: flex-start;
   background: var(--xp-face-bg);
-  padding: 1px 1px;
+  padding: 1px;
   min-width: 0;
-  min-height: 14px;
-  overflow: hidden;
+  min-height: 18px;
   text-align: center;
+  /* no overflow:hidden — the <select> handles its own ellipsis */
 }
 
 .xp-tooth__face--vestibular_bucal { grid-area: v; }
 .xp-tooth__face--mesial           { grid-area: m; }
-.xp-tooth__face--oclusal_incisal  { grid-area: o; min-height: 20px; }
+.xp-tooth__face--oclusal_incisal  { grid-area: o; min-height: 22px; }
 .xp-tooth__face--distal           { grid-area: d; }
 .xp-tooth__face--lingual_palatino { grid-area: l; }
 
 .xp-tooth__face-label {
-  font-size: 8px;
-  font-weight: 600;
+  display: block;
+  flex: 0 0 auto;
+  font-size: 9px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.2px;
+  letter-spacing: 0.3px;
   color: var(--xp-muted);
   line-height: 1;
+  padding: 1px 0;
 }
 
 .xp-tooth__face[style*="background-color"] .xp-tooth__face-label {
@@ -250,7 +267,8 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  min-height: 44px;
+  min-height: 80px;
+  flex: 1 1 auto;
 }
 
 .xp-tooth__estado {
@@ -327,13 +345,16 @@
 /* ----- FDI code label (bottom of each tooth) ----- */
 
 .xp-tooth__fdi {
-  font-size: 11px;
+  flex: 0 0 auto;
+  font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.4px;
   color: var(--xp-muted);
   text-align: center;
   border-top: 1px solid var(--xp-border-soft);
-  padding-top: 1px;
+  padding-top: 2px;
+  margin-top: 1px;
+  line-height: 1.1;
 }
 
 /* ----- Readonly variant: hide all interactive chrome ----- */
