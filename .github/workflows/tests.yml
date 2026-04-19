@@ -1,0 +1,49 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install ruff
+        run: pip install ruff
+      - name: Run ruff
+        run: ruff check .
+
+  test:
+    name: py${{ matrix.python }} / django${{ matrix.django }}
+    needs: lint
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12"]
+        django: ["4.2", "5.0", "5.2"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: "pip"
+      - name: Install Django ${{ matrix.django }} + package + test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[test]"
+          pip install "Django~=${{ matrix.django }}.0"
+      - name: Run pytest
+        run: pytest -ra tests/
