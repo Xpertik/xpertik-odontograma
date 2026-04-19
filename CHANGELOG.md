@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ReadOnlyOdontogramaWidget`: display-only variant. Same grid and colors, no form interaction, no JavaScript.
 - `BaseOdontogramaWidget`: shared context builder used by both concrete widgets. Pre-computes face labels per tooth so templates don't need template tags.
 - Shared `_tooth_grid.html` partial to avoid markup duplication between editable and readonly templates.
+- Redesigned placeholder widget UI as a clinical dental-chart grid (5 faces per tooth, colors from settings, quadrant layout, mode toggle). Still a placeholder — interactive SVG is scheduled for v0.2.0.
 - Extensible state palettes via `XPERTIK_ODONTOGRAMA_ESTADOS_CARA` and `XPERTIK_ODONTOGRAMA_ESTADOS_DIENTE` in consumer's `settings.py`. Package defaults wrapped in `gettext_lazy`.
 - Write-strict / read-tolerant validation split:
   - `validate_odontograma_strict`: raises `ValidationError` on invalid FDI, XOR violation (`estado` vs `caras`), unknown state keys, invalid `causa`.
