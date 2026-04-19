@@ -10,6 +10,38 @@
 
 ---
 
+## Shipped in v0.2.0 (2026-04-19)
+
+El change `v0-2-0-peru-profile` cerró la **capa de datos** del perfil Perú. El análisis original de este documento se escribió contra v0.1.0; las secciones siguientes permanecen como registro histórico, pero los siguientes deltas aplican a v0.2.0:
+
+**Deltas implementados (capa de datos)**:
+
+- ✅ Perfil Perú opt-in (`xpertik_odontograma.profiles.peru`): se activa agregando `"xpertik_odontograma.profiles.peru"` a `INSTALLED_APPS` + declarando un `OdontogramaPeruInicialField` en el modelo.
+- ✅ Sistema de colores normativo: constantes `ROJO_NORMA = "#d32f2f"` y `AZUL_NORMA = "#1565c0"` + sistema simbólico (`"rojo"` / `"azul"`); rechazo duro de hex en extensiones (V.7 en la capa de datos).
+- ✅ Catálogo de **32 nomenclaturas** (VI.1.1–VI.1.33 menos VI.1.24, documentada como `AUSENCIA_NORMATIVA_VI_1_24`). Cada entrada lleva `clausula_norma` para trazabilidad (VI.1 en la capa de datos).
+- ✅ **26 usables en v0.2.0**; 6 cross-teeth (aparato orto fijo/removible, diastema, geminación/fusión, transposición, supernumerario) RECHAZADAS con mensaje explícito apuntando a v0.3.0.
+- ✅ `validate_peru_strict`: validador opt-in que dispatcha por registry; rechaza nomenclaturas desconocidas, colores hex, parametros inválidos.
+- ✅ Campo `especificaciones` por pieza + top-level `especificaciones_generales` (Disp. V.9, V.10, V.11 en la capa de datos). Helpers en `profiles.peru.specifications`.
+- ✅ HARD enforcement de extensiones vía `PeruAppConfig.ready()` — cualquier intento del consumidor de sobrescribir una key normativa o usar hex hace fallar el arranque de Django con `ImproperlyConfigured` (V.14).
+- ✅ Backward compat byte-a-byte: los 89 tests de v0.1.0 siguen en verde sin cambios; ninguna migración requerida al subir de v0.1.0 → v0.2.0 siempre que no se active el perfil.
+- ✅ 170 tests nuevos (total 259) pinean: tamaño del catálogo, las 6 keys cross-teeth, aritmética "26 usables", inmutabilidad del dataclass frozen, rechazo de cada una de las 6 cross-teeth con texto literal "v0.3.0", 16 regresiones v0.1.
+
+**Lo que NO cambió en v0.2.0 (queda pendiente para v0.3.0)**:
+
+- ⏳ Widget / UI: sigue siendo el grid HTML placeholder de v0.1.0. No renderiza las representaciones gráficas normativas (aspas, triángulos, flechas, siglas en recuadros).
+- ⏳ Zona apical separada de la coronal (Anexo II 5.4).
+- ⏳ Recuadros superiores/inferiores para siglas (Anexo II 5.1).
+- ⏳ `OdontogramaPeruEvolucionField` / odontograma paralela de evolución (Disp. V.4).
+- ⏳ Inalterabilidad + audit trail (Disp. V.3, V.13).
+- ⏳ CSS `@media print` B/N (Disp. V.12).
+- ⏳ Hallazgos radiográficos como sub-clave estructurada (Disp. V.11).
+- ⏳ Cross-teeth anomalies (6 nomenclaturas).
+- ⏳ Distinción semántica hallazgos vs plan (Disp. V.5) — se tipifica la `categoria` en el catálogo pero no hay enforcement semántico.
+
+El roadmap actualizado está en la Sección 6.
+
+---
+
 ## Sección 1 — Resumen ejecutivo
 
 | Eje | Status | Severidad | Notas |
@@ -17,18 +49,18 @@
 | Nomenclatura FDI / ISO 3950 | ✅ CONFORME | — | V.2 cumplida — `DIENTES_PERMANENTES` y `DIENTES_TEMPORALES` usan codificación digito-2 |
 | Dentición permanente / temporal / mixta | ✅ CONFORME | — | Configurable vía `denticion=` kwarg en `OdontogramaField` |
 | Línea central entre lados | ✅ CONFORME | — | Midline CSS en el widget placeholder |
-| Sistema de colores (solo rojo y azul) | ❌ NO CONFORME | CRÍTICO | Paleta actual (#424242, #6a1b9a, #ffb300, #00838f, #81c784, #ff9800) viola V.7 |
-| 33 nomenclaturas específicas (VI.1) | ❌ PARCIAL (≈ 6 / 33 ≈ 18 %) | CRÍTICO | Sólo caries, fractura, ausente, corona, implante, prótesis fija mapeables — sin siglas ni formas normadas |
-| Representación gráfica por nomenclatura | ❌ NO CONFORME | CRÍTICO | Norma exige formas específicas (aspa, X, líneas, triángulos, flechas, siglas); el paquete solo pinta color de fondo |
-| Inalterabilidad (V.3 y V.13) | ❌ NO CONFORME | ALTO | Edición libre actual, sin audit trail, sin firma de modificación |
-| Odontograma paralelo de evolución (V.4) | ❌ NO IMPLEMENTADA | ALTO | Falta segundo field / modelo paralelo para evolución de tratamientos |
-| Distinción hallazgos vs plan (V.5) | ⚠️ NO SEMÁNTICO | MEDIO | El modelo no distingue hallazgos observados de plan de tratamiento |
-| Campo de especificaciones (V.9, V.10, V.11) | ❌ NO IMPLEMENTADO | ALTO | Necesario para anomalías múltiples, tipo de aparatología, color de metal de corona, hallazgos radiográficos |
-| Zona Apical diferenciada (Anexo II) | ❌ NO IMPLEMENTADA | ALTO | Solo hay 5 caras coronales, sin separar corona / raíz |
-| Recuadros encima/debajo para siglas (Anexo II) | ❌ NO IMPLEMENTADO | ALTO | UI placeholder no renderiza los 3 recuadros superiores + 3 inferiores por cuadrante |
-| Impresión en negro (V.12) | ⚠️ PARCIAL | MEDIO | Print CSS actual mantiene colores; falta `@media print` que convierta a B/N |
-| Corona ≥ 1 cm² impresa (V.12) | ⚠️ PARCIAL | BAJO | Tamaño CSS relativo — se respeta en pantalla pero no validado en impresión |
-| Extensibilidad por especialidad (V.14) | ⚠️ PARCIAL | MEDIO | `XPERTIK_ODONTOGRAMA_ESTADOS_*` permite agregar estados, pero no bloquea override de la base normada |
+| Sistema de colores (solo rojo y azul) | ✅ CONFORME (en perfil Perú v0.2.0) / ⚠️ OPT-IN | CRÍTICO | `profiles.peru` fija `#d32f2f`/`#1565c0`; paquete base conserva paleta v0.1.0 para uso genérico no-Perú |
+| 33 nomenclaturas específicas (VI.1) | ⚠️ PARCIAL v0.2.0 — 26/32 usables en datos | CRÍTICO | Catálogo de datos completo (32 entradas, VI.1.24 ausente en norma). 6 cross-teeth rechazadas apuntando a v0.3.0. Representación gráfica normativa: ⏳ v0.3.0. |
+| Representación gráfica por nomenclatura | ❌ NO CONFORME (UI intacta en v0.2.0) | CRÍTICO | UI sigue el placeholder de v0.1.0; SVG interactivo normativo llega en v0.3.0 |
+| Inalterabilidad (V.3 y V.13) | ❌ NO CONFORME (⏳ v0.3.0) | ALTO | Edición libre actual, sin audit trail, sin firma de modificación |
+| Odontograma paralelo de evolución (V.4) | ❌ NO IMPLEMENTADA (⏳ v0.3.0) | ALTO | Falta segundo field / modelo paralelo para evolución de tratamientos |
+| Distinción hallazgos vs plan (V.5) | ⚠️ PARCIAL v0.2.0 — categoría tipificada | MEDIO | `categoria` se tipifica en el catálogo (hallazgo/tratamiento/anomalia/ortodontico); enforcement semántico ⏳ v0.3.0 |
+| Campo de especificaciones (V.9, V.10, V.11) | ✅ CONFORME v0.2.0 (per-tooth + global) | ALTO | `especificaciones` por pieza + `especificaciones_generales` top-level + helpers |
+| Zona Apical diferenciada (Anexo II) | ❌ NO IMPLEMENTADA (⏳ v0.3.0) | ALTO | Solo hay 5 caras coronales, sin separar corona / raíz |
+| Recuadros encima/debajo para siglas (Anexo II) | ❌ NO IMPLEMENTADO (⏳ v0.3.0) | ALTO | UI placeholder no renderiza los 3 recuadros superiores + 3 inferiores por cuadrante |
+| Impresión en negro (V.12) | ⚠️ PARCIAL (⏳ v0.3.0) | MEDIO | Print CSS actual mantiene colores; falta `@media print` que convierta a B/N |
+| Corona ≥ 1 cm² impresa (V.12) | ⚠️ PARCIAL (⏳ v0.3.0) | BAJO | Tamaño CSS relativo — se respeta en pantalla pero no validado en impresión |
+| Extensibilidad por especialidad (V.14) | ✅ CONFORME v0.2.0 (HARD enforcement) | MEDIO | `PeruAppConfig.ready()` rechaza override de keys normativas + hex; `ImproperlyConfigured` al arranque |
 | Tiempo máximo 10 min (V.15) | N/A | — | Requisito operativo humano, no técnico del paquete |
 
 **Veredicto**: el paquete v0.1.0 es un buen cimiento técnico-estructural pero funcionalmente sirve como odontograma genérico; para cumplir la Norma Técnica del Perú se requiere un **perfil específico** (`xpertik_odontograma.profiles.peru`) con las 33 nomenclaturas, paleta binaria rojo/azul, zona apical, recuadros de siglas, item especificaciones, evolución paralela e inalterabilidad.
@@ -913,26 +945,26 @@ El Anexo II del PDF identifica cinco zonas del gráfico:
 
 ### P0 (bloqueantes — sin esto el paquete NO cumple la norma)
 
-- [ ] Crear módulo `xpertik_odontograma.profiles.peru` con `states.py`, `validators.py`, `widgets.py`, `models.py`.
-- [ ] Restringir paleta de colores a rojo (`#d32f2f`) y azul (`#0040ff`) en el perfil Perú; rechazar cualquier otro color.
-- [ ] Implementar las 33 nomenclaturas VI.1.1–VI.1.33 con sus keys, siglas y condiciones (buen estado / mal estado / temporal).
-- [ ] Implementar representaciones gráficas SVG: aspa, X, circunferencia, triángulo, flechas rectas/curvas, líneas paralelas, paréntesis invertido, siglas en recuadro.
-- [ ] Zona apical separada de la coronal en el schema (`{caras: {...}, raiz: {...}}`).
-- [ ] Recuadros superiores e inferiores en el widget para alojar siglas (3 filas arriba, 3 filas abajo por arcada, como Anexo II).
-- [ ] Clave top-level `especificaciones: str` en el schema JSON + textarea en widget.
-- [ ] Campo `odontograma_evolucion` paralelo al `odontograma_inicial` (V.4).
-- [ ] Inalterabilidad del inicial: bloqueo en `pre_save` + audit trail apendeable (V.3, V.13).
-- [ ] Soporte de nomenclaturas inter-piezas (`hallazgos_inter_piezas: list[...]`) para diastema, geminación/fusión, supernumerario, transposición, aparato ortodóntico fijo/removible, prótesis removible/total.
+- [x] ✅ **v0.2.0** — Crear módulo `xpertik_odontograma.profiles.peru` con `states.py`, `validators.py`, `fields.py`, `apps.py`, `specifications.py`, `constants.py`.
+- [x] ✅ **v0.2.0** (en perfil Perú) — Restringir paleta de colores a rojo (`#d32f2f`) y azul (`#1565c0`); sistema simbólico + rechazo de hex en extensiones.
+- [ ] ⚠️ PARCIAL **v0.2.0** — Catálogo de datos de las 32 nomenclaturas VI.1 (26 usables + 6 cross-teeth rechazadas con pointer a v0.3.0). Representación gráfica normativa: ⏳ v0.3.0.
+- [ ] ⏳ **v0.3.0** — Implementar representaciones gráficas SVG: aspa, X, circunferencia, triángulo, flechas rectas/curvas, líneas paralelas, paréntesis invertido, siglas en recuadro.
+- [ ] ⏳ **v0.3.0** — Zona apical separada de la coronal en el schema (`{caras: {...}, raiz: {...}}`).
+- [ ] ⏳ **v0.3.0** — Recuadros superiores e inferiores en el widget para alojar siglas (3 filas arriba, 3 filas abajo por arcada, como Anexo II).
+- [x] ✅ **v0.2.0** — Clave top-level `especificaciones_generales: str` + `especificaciones: str` por pieza en el schema JSON (helpers en `profiles.peru.specifications`). Textarea en widget: ⏳ v0.3.0 junto a la UI normativa.
+- [ ] ⏳ **v0.3.0** — Campo `odontograma_evolucion` paralelo al `odontograma_inicial` (V.4).
+- [ ] ⏳ **v0.3.0** — Inalterabilidad del inicial: bloqueo en `pre_save` + audit trail apendeable (V.3, V.13).
+- [ ] ⏳ **v0.3.0** — Soporte de nomenclaturas inter-piezas (`hallazgos_inter_piezas: list[...]`) para diastema, geminación/fusión, supernumerario, transposición, aparato ortodóntico fijo/removible, prótesis removible/total. (v0.2.0 rechaza estas 6 con error explícito.)
 
 ### P1 (conformidad completa)
 
-- [ ] Distinguir semánticamente hallazgos observados (inicial) vs plan de tratamiento (fuera del odontograma) — convención documentada (V.5).
-- [ ] Sub-clave `origen: "clinico" | "radiografico"` por entry (V.11).
-- [ ] CSS `@media print` que convierte base del gráfico a B/N conservando rojo/azul de los hallazgos; tamaño de corona ≥ 10 mm × 10 mm absolutos (V.12).
-- [ ] Lock de base de nomenclaturas: el merge del perfil Perú rechaza overrides sobre las 33 keys normativas, pero permite agregar keys adicionales (V.14).
-- [ ] Validación dura de `causas_ausencia` coherente con Anexo I (`extraccion | exfoliacion | agenesia` ya existe — mantener).
-- [ ] API `instance.modificar_odontograma(cambios, usuario, motivo)` con firma automática en `especificaciones` (V.13).
-- [ ] Validador "anomalías múltiples" (V.10): si `estados` tiene >1 entrada por pieza, auto-anexar resto a `especificaciones`.
+- [ ] ⚠️ PARCIAL **v0.2.0** — `categoria` (hallazgo/tratamiento/anomalia/ortodontico) se tipifica en el catálogo. Enforcement semántico hallazgos-vs-plan: ⏳ v0.3.0 (V.5).
+- [ ] ⏳ **v0.3.0** — Sub-clave `origen: "clinico" | "radiografico"` por entry (V.11). Por ahora el texto libre en `especificaciones` es la vía de registro.
+- [ ] ⏳ **v0.3.0** — CSS `@media print` que convierte base del gráfico a B/N conservando rojo/azul de los hallazgos; tamaño de corona ≥ 10 mm × 10 mm absolutos (V.12).
+- [x] ✅ **v0.2.0** — HARD lock de nomenclaturas normativas: `PeruAppConfig.ready()` rechaza overrides sobre las 32 keys del catálogo, permite agregar extensiones (V.14). `ImproperlyConfigured` al arranque.
+- [x] ✅ **v0.2.0** — Validación de causas coherente con Anexo I (definiciones en el catálogo; `extraccion | exfoliacion | agenesia` preservadas desde v0.1.0).
+- [ ] ⏳ **v0.3.0** — API `instance.modificar_odontograma(cambios, usuario, motivo)` con firma automática en `especificaciones` (V.13).
+- [ ] ⏳ **v0.3.0** — Validador "anomalías múltiples" (V.10): si `estados` tiene >1 entrada por pieza, auto-anexar resto a `especificaciones`.
 
 ### P2 (mejoras post-norma)
 
