@@ -64,7 +64,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: max-content;
+  min-width: 0;
   overflow-x: auto;
 }
 
@@ -72,12 +72,14 @@
   display: flex;
   align-items: stretch;
   gap: 0;
+  min-width: 0;
 }
 
 .xp-odontograma__half {
   display: grid;
   gap: var(--xp-gap);
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  min-width: 0;
 }
 
 .xp-odontograma--permanente .xp-odontograma__half,
@@ -226,10 +228,12 @@
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
   color: var(--xp-text);
+  box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Hide native focus ring inside admin field; preserve accessible focus. */
@@ -292,8 +296,12 @@
   border: 1px solid var(--xp-border-soft);
   border-radius: 2px;
   color: var(--xp-text);
+  box-sizing: border-box;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Causa <select> is only relevant when estado == ausente. Hide by default;

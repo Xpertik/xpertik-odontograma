@@ -36,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Compacted placeholder widget tooth sizing from ~220px to ~85px per tooth so a permanent-dentition row fits in the Django admin viewport without clipping. Face labels abbreviated to single letters (V/M/O/I/D/L/P) with full names preserved as hover tooltips and `aria-label`. Chart containers also get `overflow-x: auto` as a safety net on narrower consumers; print CSS bumps teeth back up for paper legibility.
+  - Added `min-width: 0` to chart/row/half flex items and `box-sizing: border-box` + `white-space: nowrap` to the inline `<select>` elements so the native select's intrinsic width (dominated by long option labels like "— sin hallazgo —") can no longer push grid cells past their declared `1fr` share.
 
 ### Known limitations (intentional for v0.1.0)
 
