@@ -25,7 +25,6 @@ from xpertik_odontograma.validators import (
     validate_odontograma_strict,
 )
 
-
 # ---------------------------------------------------------------------------
 # validate_odontograma_strict — happy paths
 # ---------------------------------------------------------------------------

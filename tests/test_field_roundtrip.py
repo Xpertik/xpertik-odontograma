@@ -26,7 +26,6 @@ from xpertik_odontograma.widgets import OdontogramaWidget, ReadOnlyOdontogramaWi
 
 from .models import Patient
 
-
 # ---------------------------------------------------------------------------
 # Construction / introspection
 # ---------------------------------------------------------------------------
