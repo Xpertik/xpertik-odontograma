@@ -170,6 +170,95 @@ XPERTIK_ODONTOGRAMA_ESTADOS_CARA = {
 
 **i18n note**: the package's own default labels are wrapped in `gettext_lazy`. If your consumer overrides need translation, wrap them yourself — the package does not touch your dict values.
 
+## Peru profile (Norma Técnica del Colegio Odontológico)
+
+`xpertik-odontograma` ships an optional **Peru profile** that enforces the Norma Técnica del Odontograma issued by the Colegio Odontológico del Perú. When activated, the profile:
+
+- Restricts colors to the two normative values (**red** `#d32f2f` / **blue** `#1565c0`) — Disposición V.7.
+- Validates each tooth entry against a **catalog of 32 normative nomenclaturas** (VI.1 of the norm). 6 are cross-teeth anomalies (diastema, geminación/fusión, transposición, supernumerario, ortodonticos fijo/removible) and are REJECTED in v0.2.0 with a clear error pointing to v0.3.0. **26 usable** in v0.2.0.
+- Adds `especificaciones` fields (per-tooth and global) for findings that cannot be registered graphically (Disp. V.9, V.10, V.11).
+- Enforces extensions STRICTLY via `AppConfig.ready()` — any consumer attempting to override a normative key or use a hex color will see Django fail to start with a clear error (Disp. V.14).
+
+### Activation
+
+1. Add the profile to `INSTALLED_APPS`:
+
+   ```python
+   INSTALLED_APPS = [
+       # ...
+       "xpertik_odontograma",
+       "xpertik_odontograma.profiles.peru",  # <-- add this
+       # ...
+   ]
+   ```
+
+2. Declare a field in your model:
+
+   ```python
+   from xpertik_odontograma.profiles.peru.fields import OdontogramaPeruInicialField
+
+   class Paciente(models.Model):
+       nombre = models.CharField(max_length=150)
+       odontograma = OdontogramaPeruInicialField(default=dict, blank=True)
+   ```
+
+   The profile is locked to `"peru"` on this field class. Passing `profile=` as a kwarg raises `TypeError`.
+
+### Extending the catalog
+
+Especialidades may ADD new nomenclaturas without modifying the base catalog (Disp. V.14):
+
+```python
+# settings.py
+XPERTIK_ODONTOGRAMA_PROFILE_EXTENSIONS = {
+    "implante_corto": {
+        "label": _("Implante corto"),
+        "color": "azul",               # symbolic only — never hex
+        "zona": "corona",              # corona | raiz | entre_piezas | recuadro | sobre_apices
+        "categoria": "tratamiento",    # hallazgo | tratamiento | anomalia | ortodontico
+        "sigla": "IMP-C",
+    },
+}
+```
+
+HARD rules (violation → `ImproperlyConfigured` at Django startup):
+
+- Extension key MUST NOT collide with any key in the normative catalog.
+- `color` MUST be `"rojo"` or `"azul"` (symbolic). Hex values are rejected.
+- `zona` and `categoria` MUST be one of the enum values.
+- All required fields (label, color, zona, categoria) MUST be present.
+
+### Especificaciones
+
+The JSON schema is extended with two optional text fields:
+
+```json
+{
+  "16": {
+    "caras": {"oclusal_incisal": "caries"},
+    "especificaciones": "Dolor al frío, sensibilidad dentinaria"
+  },
+  "especificaciones_generales": "Hallazgos radiográficos: dos lesiones periapicales en el cuadrante superior derecho"
+}
+```
+
+Use the helpers in `xpertik_odontograma.profiles.peru.specifications` to read/write safely.
+
+### What the profile does NOT do (v0.2.0)
+
+- Renders the custom graphical representations per nomenclatura (aspas, triángulos, flechas, siglas en recuadros). The UI stays as the v0.1.0 HTML placeholder. Interactive SVG with normative graphics lands in v0.3.0.
+- Does NOT separate corona vs raíz as distinct zones (still 5 caras per tooth). v0.3.0 will model the apical zone as its own entity.
+- Does NOT implement the parallel odontograma de evolución (Disp. V.4). v0.3.0.
+- Does NOT enforce inalterabilidad / audit trail (Disp. V.3, V.13). v0.3.0.
+- Does NOT support cross-teeth anomalies (6 of 32 nomenclaturas). v0.3.0.
+
+For the full conformance analysis and v0.3.0 roadmap, see [NORMA_CUMPLIMIENTO.md](./NORMA_CUMPLIMIENTO.md).
+
+### References
+
+- [Norma Técnica del Odontograma — PDF](./docs/norms/norma-tecnica-odontograma-peru.pdf) (Colegio Odontológico del Perú)
+- [Análisis de conformidad](./NORMA_CUMPLIMIENTO.md) (1000+ lines, per-clause + per-nomenclatura analysis)
+
 ## Readonly widget
 
 For display-only contexts (report pages, PDF exports, audit logs), use `ReadOnlyOdontogramaWidget`:
@@ -223,9 +312,9 @@ LOGGING = {
 
 ## Roadmap
 
-- **v0.1.0** (current): data model, validators, placeholder UI, tests, CI, **TestPyPI only**. Clinical feedback loop with one practicing odontologist.
-- **v0.2.0**: interactive SVG replacing the placeholder grid (click-on-face, color swatches, dentition-mixta layout), publication to **PyPI proper**, clinical-validation fixes.
-- **v0.3.0+**: management command for dentition reconciliation, report/PDF rendering, plurality of languages (Portuguese, English state catalogs).
+- **v0.1.0**: generic data model, validators, placeholder UI, tests, CI, **TestPyPI only**. Clinical feedback loop with one practicing odontologist.
+- **v0.2.0** (shipped with this release): **data-layer Peru profile** — catalog of 32 normative nomenclaturas (26 usable + 6 cross-teeth deferred), symbolic colors, HARD extension enforcement, `especificaciones` per-tooth and global, `OdontogramaPeruInicialField`. Byte-identical backward compat when no profile is active. UI still the v0.1.0 placeholder grid.
+- **v0.3.0**: interactive SVG widget with full normative graphical conformance (aspas, triángulos, flechas, siglas en recuadros), apical zone as a distinct entity, cross-teeth anomalies, odontograma paralela de evolución (Disp. V.4), inalterabilidad + audit trail (Disp. V.3, V.13), B&W print CSS, radiographic findings field. Publication to PyPI proper.
 
 ## Contributing
 
