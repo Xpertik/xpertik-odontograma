@@ -17,9 +17,11 @@ class Patient(models.Model):
     """Minimal patient record with three odontograms — one per denticion."""
 
     name = models.CharField(max_length=100)
-    odontograma_permanente = OdontogramaField(default=dict)
-    odontograma_mixta = OdontogramaField(denticion="mixta", default=dict)
-    odontograma_temporal = OdontogramaField(denticion="temporal", default=dict)
+    # `blank=True` lets `full_clean()` accept the JSONField default `{}` —
+    # an empty odontograma is semantically valid per the strict validator.
+    odontograma_permanente = OdontogramaField(blank=True)
+    odontograma_mixta = OdontogramaField(denticion="mixta", blank=True)
+    odontograma_temporal = OdontogramaField(denticion="temporal", blank=True)
 
     class Meta:
         app_label = "tests"
