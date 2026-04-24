@@ -96,16 +96,20 @@ class OdontogramaSvgWidget(forms.Widget):
     # ------------------------------------------------------------------
 
     def value_from_datadict(self, data, files, name):
-        """Parse the hidden input's JSON back into a dict."""
+        """Return the raw JSON string from POST data.
+
+        Django's ``forms.JSONField.to_python`` parses the string into a
+        dict during cleaning, and ``bound_data`` re-parses on re-render
+        after a validation error. Returning the raw string keeps the
+        JSONField flow intact; pre-parsed dicts (rare, e.g. test
+        fixtures) are re-serialized so downstream code is uniform.
+        """
         raw = data.get(name)
-        if raw in (None, ""):
-            return {}
+        if raw is None:
+            return None
         if isinstance(raw, (dict, list)):
-            return raw
-        try:
-            return json.loads(raw)
-        except (TypeError, ValueError):
-            return raw
+            return json.dumps(raw, ensure_ascii=False)
+        return raw
 
     def format_value(self, value):
         """Return the value as a dict; template JSON-encodes once in ``get_context``."""

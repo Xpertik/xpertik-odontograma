@@ -167,13 +167,25 @@ def test_v0_2_both_estado_and_caras_still_rejected() -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_value_from_datadict_parses_v0_2_json_payload() -> None:
+def test_value_from_datadict_passes_raw_json_string_through() -> None:
+    """value_from_datadict returns the raw JSON string from POST data.
+
+    Django's ``forms.JSONField.to_python`` parses the string into a dict
+    during cleaning. Returning a dict here would break ``bound_data`` on
+    re-render after a validation error (json.loads expects a string).
+    """
     import json
 
     w = OdontogramaSvgWidget(denticion="permanente")
-    raw = {"odontograma": json.dumps(_V0_2_SIMPLE_CARIES)}
+    payload_str = json.dumps(_V0_2_SIMPLE_CARIES)
+    raw = {"odontograma": payload_str}
     parsed = w.value_from_datadict(raw, {}, "odontograma")
-    assert parsed == _V0_2_SIMPLE_CARIES
+    assert parsed == payload_str
+    # Pre-parsed dicts (test fixtures) get re-serialized to a string.
+    raw_dict = {"odontograma": _V0_2_SIMPLE_CARIES}
+    parsed_dict = w.value_from_datadict(raw_dict, {}, "odontograma")
+    assert isinstance(parsed_dict, str)
+    assert json.loads(parsed_dict) == _V0_2_SIMPLE_CARIES
 
 
 def test_format_value_accepts_v0_2_dict_directly() -> None:

@@ -112,6 +112,11 @@ class OdontogramaField(models.JSONField):
         defaults: dict[str, Any] = {
             "form_class": OdontogramaFormField,
             "denticion": self.denticion,
+            # Pass the model field's profile so OdontogramaFormField.validate
+            # can route to the profile-aware strict validator (peru's CATALOG
+            # owns the semantic state checks; without this, the form layer
+            # would re-run base validation and reject peru-specific keys).
+            "profile": self.profile,
         }
         defaults.update(kwargs)
         return super().formfield(**defaults)

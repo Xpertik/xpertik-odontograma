@@ -37,9 +37,11 @@ class OdontogramaFormField(forms.JSONField):
         self,
         *args: Any,
         denticion: str = "permanente",
+        profile: str | None = None,
         **kwargs: Any,
     ) -> None:
         self.denticion = denticion
+        self.profile = profile
 
         # If the caller didn't pass a widget OR passed the bare class
         # reference, instantiate our own wired to the requested denticion.
@@ -53,4 +55,6 @@ class OdontogramaFormField(forms.JSONField):
 
     def validate(self, value: Any) -> None:
         super().validate(value)
-        validate_odontograma_strict(value, self.denticion)
+        # Pass profile through so the strict validator bypasses the base
+        # ESTADOS_* checks when a profile (e.g. peru) owns the catalog.
+        validate_odontograma_strict(value, self.denticion, profile=self.profile)

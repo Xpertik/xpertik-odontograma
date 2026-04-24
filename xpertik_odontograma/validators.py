@@ -76,7 +76,13 @@ _ALLOWED_CARAS_KEYS: frozenset[str] = frozenset(
 )
 
 
-def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
+def validate_tooth_entry(
+    code: Any,
+    entry: Any,
+    denticion: str,
+    *,
+    profile: str | None = None,
+) -> None:
     """Validate a single ``(fdi_code, entry)`` pair.
 
     Raises :class:`ValidationError` with a stable ``code`` string on any
@@ -170,7 +176,14 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
             )
 
         estado = entry["estado"]
-        if estado not in package_settings.ESTADOS_DIENTE:
+        # Semantic state validation is the profile layer's job. The base
+        # validator only checks structure (XOR, FDI range, types). When a
+        # profile is active, the profile catalog (e.g. peru CATALOG) decides
+        # which estado values are valid; the base ESTADOS_DIENTE defaults
+        # are bypassed so peru-specific keys like "corona_definitiva",
+        # "diente_ausente", "tratamiento_pulpar" etc. don't get falsely
+        # rejected here.
+        if profile is None and estado not in package_settings.ESTADOS_DIENTE:
             raise ValidationError(
                 _("Unknown tooth-state %(estado)r for tooth %(code)s."),
                 code="unknown_estado",
@@ -178,7 +191,10 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
             )
 
         if "causa" in entry:
-            if estado != "ausente":
+            # When a profile is active, the profile validator owns the
+            # ausencia-causa coupling rule (e.g. peru's CAUSAS_AUSENCIA);
+            # base only enforces type and key shape.
+            if profile is None and estado != "ausente":
                 raise ValidationError(
                     _(
                         "Key 'causa' on tooth %(code)s is only allowed when "
@@ -187,7 +203,7 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
                     code="invalid_causa",
                     params={"code": fdi_int},
                 )
-            if entry["causa"] not in CAUSAS_AUSENCIA:
+            if profile is None and entry["causa"] not in CAUSAS_AUSENCIA:
                 raise ValidationError(
                     _("Unknown causa %(causa)r on tooth %(code)s."),
                     code="invalid_causa",
@@ -222,7 +238,10 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
                 )
             if face_value is None:
                 continue
-            if face_value not in package_settings.ESTADOS_CARA:
+            # Semantic face-state validation is the profile layer's job
+            # (see comment above on estado). When profile is active, peru
+            # CATALOG decides which face-state keys are valid.
+            if profile is None and face_value not in package_settings.ESTADOS_CARA:
                 raise ValidationError(
                     _("Unknown face-state %(state)r on face %(face)s of tooth %(code)s."),
                     code="unknown_face_value",
@@ -294,7 +313,7 @@ def validate_odontograma_strict(
         if code == "especificaciones_generales":
             continue
         try:
-            validate_tooth_entry(code, entry, denticion)
+            validate_tooth_entry(code, entry, denticion, profile=profile)
         except ValidationError as exc:
             errors.append(exc)
 
