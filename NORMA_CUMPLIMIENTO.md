@@ -10,6 +10,38 @@
 
 ---
 
+## Shipped in v0.3.0-alpha.1 (2026-04-24)
+
+El change `v0-3-0-peru-ui` abrió la **capa de UI** del perfil Perú. Esta es una pre-release alpha — las nomenclaturas quedan parcialmente cubiertas y el polish llega en alpha.2/alpha.3. Los siguientes deltas aplican a v0.3.0-alpha.1:
+
+**Deltas implementados (capa de UI)**:
+
+- ✅ Widget SVG interactivo reemplaza el placeholder HTML de v0.1.0/v0.2.0 (`xpertik_odontograma.svg.renderer` + `xpertik_odontograma.svg.silhouettes`).
+- ✅ Zona Apical como slot de datos de primer nivel: schema ahora acepta `apice: {estado, parametros?}` por pieza junto a `caras` (Anexo II 5.4 — capa de datos + render).
+- ✅ Recuadros para siglas — 3 filas arriba + 3 filas abajo por arcada, con siglas auto-derivadas server-side desde el estado (Anexo II 5.1).
+- ✅ Popover contextual (`<dialog>` nativo) con filtro por `zona` al hacer click sobre una cara / ápice. Sub-selector de parámetros para `movilidad.grado`, `corona_definitiva.tipo`, `restauracion.material`, `tratamiento_pulpar.tipo`.
+- ✅ **7 nomenclaturas core renderizadas** con su primitiva gráfica normativa: caries (cara roja), restauracion (cara azul + sigla material), diente_ausente (aspa azul), corona_definitiva (circunferencia azul + sigla tipo), implante (IMP + silueta atenuada), movilidad (M{grado} en recuadro), tratamiento_pulpar (línea vertical azul en raíz + sigla tipo).
+- ✅ Cross-teeth nomenclaturas (6 keys) visibles en popover pero **deshabilitadas con tooltip `Disponible en v0.4.0`** (entran al catálogo JSON blob con `cross_teeth: true`).
+- ✅ Print CSS — `@media print { @page { size: A4 landscape } }` + `print-color-adjust: exact` sobre `.xp-face`, `.xp-apice`, `.xp-recuadro`, `.xp-tooth`; popover/select/button ocultos en papel.
+- ✅ Navegación por teclado — Tab/Shift+Tab recorren zonas en orden, Enter/Space activan, ESC descarta popover. `aria-label` en cada zona interactiva.
+- ✅ Backward compat: los 259 tests de v0.2.0 + los 185 nuevos de v0.3.0-alpha.1 = **444 tests** en verde. Datos v0.2.0 (sin `apice`) roundtrip-ean sin migración.
+
+**Lo que NO cambió en v0.3.0-alpha.1 (queda pendiente para alpha.2/alpha.3 o v0.4.0)**:
+
+- ⚠️ **Solo 7 de 26 nomenclaturas usables** tienen su primitiva gráfica específica. Las otras 19 aparecen en el popover pero se pintan como color de estado plano — render completo llega en alpha.3.
+- ⚠️ **Re-render client-side parcial**: al seleccionar en el popover sólo se repinta el fill de la cara. Otros overlays (aspa, anillo de corona, línea apical, siglas auto-derivadas) quedan stale hasta que se envíe el formulario — alpha.2.
+- ⚠️ **Siluetas son aproximaciones geométricas** (D1 "rough first pass"). Polish post-review odontólogo → alpha.2.
+- ⏳ Cross-teeth anomalies (las 6) siguen RECHAZADAS por `validate_peru_strict` — implementación llega en v0.4.0.
+- ⏳ `OdontogramaPeruEvolucionField` / odontograma paralela de evolución (Disp. V.4) — v0.4.0.
+- ⏳ Inalterabilidad + audit trail (Disp. V.3, V.13) — v0.4.0.
+- ⏳ CSS print **estricto B/N** (Disp. V.12) — alpha.1 solo preserva colores; el modo B/N puro es v0.4.0.
+- ⏳ Hallazgos radiográficos como sub-clave estructurada (Disp. V.11) — v0.4.0.
+- ⏳ Distinción semántica hallazgos vs plan (Disp. V.5) enforcement — v0.4.0.
+
+El roadmap actualizado está en la Sección 6.
+
+---
+
 ## Shipped in v0.2.0 (2026-04-19)
 
 El change `v0-2-0-peru-profile` cerró la **capa de datos** del perfil Perú. El análisis original de este documento se escribió contra v0.1.0; las secciones siguientes permanecen como registro histórico, pero los siguientes deltas aplican a v0.2.0:
@@ -50,16 +82,16 @@ El roadmap actualizado está en la Sección 6.
 | Dentición permanente / temporal / mixta | ✅ CONFORME | — | Configurable vía `denticion=` kwarg en `OdontogramaField` |
 | Línea central entre lados | ✅ CONFORME | — | Midline CSS en el widget placeholder |
 | Sistema de colores (solo rojo y azul) | ✅ CONFORME (en perfil Perú v0.2.0) / ⚠️ OPT-IN | CRÍTICO | `profiles.peru` fija `#d32f2f`/`#1565c0`; paquete base conserva paleta v0.1.0 para uso genérico no-Perú |
-| 33 nomenclaturas específicas (VI.1) | ⚠️ PARCIAL v0.2.0 — 26/32 usables en datos | CRÍTICO | Catálogo de datos completo (32 entradas, VI.1.24 ausente en norma). 6 cross-teeth rechazadas apuntando a v0.3.0. Representación gráfica normativa: ⏳ v0.3.0. |
-| Representación gráfica por nomenclatura | ❌ NO CONFORME (UI intacta en v0.2.0) | CRÍTICO | UI sigue el placeholder de v0.1.0; SVG interactivo normativo llega en v0.3.0 |
-| Inalterabilidad (V.3 y V.13) | ❌ NO CONFORME (⏳ v0.3.0) | ALTO | Edición libre actual, sin audit trail, sin firma de modificación |
-| Odontograma paralelo de evolución (V.4) | ❌ NO IMPLEMENTADA (⏳ v0.3.0) | ALTO | Falta segundo field / modelo paralelo para evolución de tratamientos |
-| Distinción hallazgos vs plan (V.5) | ⚠️ PARCIAL v0.2.0 — categoría tipificada | MEDIO | `categoria` se tipifica en el catálogo (hallazgo/tratamiento/anomalia/ortodontico); enforcement semántico ⏳ v0.3.0 |
+| 33 nomenclaturas específicas (VI.1) | ⚠️ PARCIAL v0.3.0-alpha.1 — 26/32 usables en datos, 7/26 renderizadas gráficamente | CRÍTICO | Catálogo de datos completo (32 entradas, VI.1.24 ausente en norma). 6 cross-teeth rechazadas apuntando a v0.4.0. 7 core renderizadas en alpha.1; restantes 19 llegan en alpha.3. |
+| Representación gráfica por nomenclatura | ⚠️ PARCIAL v0.3.0-alpha.1 (7/26 renderizadas; resto en alpha.3) | CRÍTICO | SVG interactivo shipped en alpha.1 con 7 primitivas core; siluetas aproximadas pendientes polish alpha.2 |
+| Inalterabilidad (V.3 y V.13) | ❌ NO CONFORME (⏳ v0.4.0) | ALTO | Edición libre actual, sin audit trail, sin firma de modificación |
+| Odontograma paralelo de evolución (V.4) | ❌ NO IMPLEMENTADA (⏳ v0.4.0) | ALTO | Falta segundo field / modelo paralelo para evolución de tratamientos |
+| Distinción hallazgos vs plan (V.5) | ⚠️ PARCIAL v0.2.0 — categoría tipificada | MEDIO | `categoria` se tipifica en el catálogo (hallazgo/tratamiento/anomalia/ortodontico); enforcement semántico ⏳ v0.4.0 |
 | Campo de especificaciones (V.9, V.10, V.11) | ✅ CONFORME v0.2.0 (per-tooth + global) | ALTO | `especificaciones` por pieza + `especificaciones_generales` top-level + helpers |
-| Zona Apical diferenciada (Anexo II) | ❌ NO IMPLEMENTADA (⏳ v0.3.0) | ALTO | Solo hay 5 caras coronales, sin separar corona / raíz |
-| Recuadros encima/debajo para siglas (Anexo II) | ❌ NO IMPLEMENTADO (⏳ v0.3.0) | ALTO | UI placeholder no renderiza los 3 recuadros superiores + 3 inferiores por cuadrante |
-| Impresión en negro (V.12) | ⚠️ PARCIAL (⏳ v0.3.0) | MEDIO | Print CSS actual mantiene colores; falta `@media print` que convierta a B/N |
-| Corona ≥ 1 cm² impresa (V.12) | ⚠️ PARCIAL (⏳ v0.3.0) | BAJO | Tamaño CSS relativo — se respeta en pantalla pero no validado en impresión |
+| Zona Apical diferenciada (Anexo II) | ✅ v0.3.0-alpha.1 (modelo de datos + render) | ALTO | Schema acepta `apice: {estado, parametros?}`; renderer dibuja clickable apice region + overlays (vertical line tratamiento_pulpar, RR remanente) |
+| Recuadros encima/debajo para siglas (Anexo II) | ✅ v0.3.0-alpha.1 (Anexo II layout) | ALTO | 3 recuadros arriba + 3 abajo por arcada, siglas auto-derivadas server-side |
+| Impresión en negro (V.12) | ⚠️ PARCIAL v0.3.0-alpha.1 (A4 landscape + color preservation; strict B/N en v0.4.0) | MEDIO | `@media print` + `@page { size: A4 landscape }` + `print-color-adjust: exact` en alpha.1; modo B/N estricto ⏳ v0.4.0 |
+| Corona ≥ 1 cm² impresa (V.12) | ⚠️ PARCIAL (⏳ v0.4.0) | BAJO | Tamaño CSS relativo — se respeta en pantalla pero no validado en impresión |
 | Extensibilidad por especialidad (V.14) | ✅ CONFORME v0.2.0 (HARD enforcement) | MEDIO | `PeruAppConfig.ready()` rechaza override de keys normativas + hex; `ImproperlyConfigured` al arranque |
 | Tiempo máximo 10 min (V.15) | N/A | — | Requisito operativo humano, no técnico del paquete |
 
