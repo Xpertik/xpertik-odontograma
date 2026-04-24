@@ -11,7 +11,9 @@ Built around the **FDI / ISO 3950** dental notation standard, with configurable 
 
 ## Status
 
-**v0.1.0 — early release.** Shipped to [TestPyPI](https://test.pypi.org/project/xpertik-odontograma/) for clinical validation. The widget UI in this release is an HTML placeholder (functional grid with state selectors). The interactive SVG is planned for v0.2.0 after feedback from a practicing odontologist.
+**v0.3.0-alpha.1 — SVG UI alpha.** Shipped to [TestPyPI](https://test.pypi.org/project/xpertik-odontograma/) for clinical feedback. This is the first release with the interactive SVG widget replacing the v0.1.0/v0.2.0 HTML placeholder. 7 of the 26 normative nomenclaturas render with their full graphical primitive (caries, restauración, diente ausente, corona definitiva, implante, movilidad, tratamiento pulpar); the remaining 19 appear in the popover but render as plain state color until alpha.3. See the [CHANGELOG](./CHANGELOG.md#030-alpha1--2026-04-24) for the complete shipped + deferred matrix.
+
+**Previous release — v0.2.0.** Data-layer Peru profile. Ship-gate clean: 259 tests, backward-compat byte-stable when no profile is active.
 
 Use it if you want to:
 
@@ -244,15 +246,27 @@ The JSON schema is extended with two optional text fields:
 
 Use the helpers in `xpertik_odontograma.profiles.peru.specifications` to read/write safely.
 
-### What the profile does NOT do (v0.2.0)
+### What ships in v0.3.0-alpha.1
 
-- Renders the custom graphical representations per nomenclatura (aspas, triángulos, flechas, siglas en recuadros). The UI stays as the v0.1.0 HTML placeholder. Interactive SVG with normative graphics lands in v0.3.0.
-- Does NOT separate corona vs raíz as distinct zones (still 5 caras per tooth). v0.3.0 will model the apical zone as its own entity.
-- Does NOT implement the parallel odontograma de evolución (Disp. V.4). v0.3.0.
-- Does NOT enforce inalterabilidad / audit trail (Disp. V.3, V.13). v0.3.0.
-- Does NOT support cross-teeth anomalies (6 of 32 nomenclaturas). v0.3.0.
+- **Interactive SVG widget** replacing the HTML placeholder. Click any face or apical zone to open a contextual popover filtered by the clicked zona.
+- **7 core nomenclaturas** rendered with their normative graphical representations (caries, restauración, diente ausente, corona definitiva, implante, movilidad, tratamiento pulpar).
+- **Apical zone** modeled as a first-class data slot alongside `caras` — the schema now accepts an optional per-tooth `apice: {estado, parametros?}`.
+- **Anexo II layout** — 3 recuadro rows above superior teeth + 3 below inferior teeth with auto-derived siglas.
+- **Cross-teeth nomenclaturas** visible in the popover but disabled with a `Disponible en v0.4.0` tooltip.
+- **Print CSS** — A4 landscape `@page` rule + color preservation (`print-color-adjust: exact`).
+- **Keyboard navigation** — Tab cycles through every zone, Enter/Space activates, ESC dismisses popover. ARIA labels on every interactive element.
 
-For the full conformance analysis and v0.3.0 roadmap, see [NORMA_CUMPLIMIENTO.md](./NORMA_CUMPLIMIENTO.md).
+### What the profile does NOT do yet (v0.3.0-alpha.1)
+
+- The remaining 19 nomenclaturas (desgaste, clavija, extruido, intruido, fractura, giroversión, impactación, macrodoncia, microdoncia, migración, prótesis removible, prótesis total, remanente radicular, restauración temporal, semi-impactación, corona temporal, discrómico, ectópico, edéntulo total) are in the catalog but not yet drawn with their specific SVG primitives — they appear in the popover but render as plain state color. Full rendering ships in alpha.3.
+- **Partial client-side re-render**: selecting a face nomenclatura updates the face fill color live; other overlays (aspa, corona ring, tratamiento_pulpar line, auto-derived siglas) remain stale until form submit + reload. Full reactive rendering lands in alpha.2.
+- **Silhouettes are geometric approximations**. Dentist review drives polish in alpha.2.
+- **Cross-teeth nomenclaturas** still rejected by the strict validator. Full support lands in v0.4.0.
+- **Odontograma paralela de evolución** (Disp. V.4), inalterabilidad / audit trail (Disp. V.3, V.13), strict B&W print mode, and radiographic-findings subfield are still scheduled for v0.4.0.
+
+> **BREAKING in v0.3.0-alpha.1**: the legacy HTML templates (`_tooth_cell.html`, `_tooth_grid.html`, `widget.html`, `widget_readonly.html`) and static assets (`odontograma.css`, `odontograma.js`) have been deleted. Consumers who extended those templates must migrate to the new SVG pipeline. Pin `xpertik-odontograma<0.3.0` to retain the legacy widget.
+
+For the full conformance analysis and roadmap, see [NORMA_CUMPLIMIENTO.md](./NORMA_CUMPLIMIENTO.md).
 
 ### References
 
@@ -313,8 +327,12 @@ LOGGING = {
 ## Roadmap
 
 - **v0.1.0**: generic data model, validators, placeholder UI, tests, CI, **TestPyPI only**. Clinical feedback loop with one practicing odontologist.
-- **v0.2.0** (shipped with this release): **data-layer Peru profile** — catalog of 32 normative nomenclaturas (26 usable + 6 cross-teeth deferred), symbolic colors, HARD extension enforcement, `especificaciones` per-tooth and global, `OdontogramaPeruInicialField`. Byte-identical backward compat when no profile is active. UI still the v0.1.0 placeholder grid.
-- **v0.3.0**: interactive SVG widget with full normative graphical conformance (aspas, triángulos, flechas, siglas en recuadros), apical zone as a distinct entity, cross-teeth anomalies, odontograma paralela de evolución (Disp. V.4), inalterabilidad + audit trail (Disp. V.3, V.13), B&W print CSS, radiographic findings field. Publication to PyPI proper.
+- **v0.2.0**: **data-layer Peru profile** — catalog of 32 normative nomenclaturas (26 usable + 6 cross-teeth deferred), symbolic colors, HARD extension enforcement, `especificaciones` per-tooth and global, `OdontogramaPeruInicialField`. Byte-identical backward compat when no profile is active. UI still the v0.1.0 placeholder grid.
+- **v0.3.0-alpha.1** (shipped with this release): **SVG widget** + **apical zone as data model**, 7 core nomenclaturas rendered, Anexo II recuadros, contextual popover, print CSS, 444 tests passing. Breaking change: legacy HTML widget deleted. TestPyPI alpha pre-release; real PyPI still gated on alpha.3 + clinical sign-off.
+- **v0.3.0-alpha.2**: silhouette polish (post-dentist review), full client-side reactive re-render, popover UX smoke-tests on Safari / NVDA / VoiceOver.
+- **v0.3.0-alpha.3**: remaining 19 nomenclaturas rendered with their specific SVG primitives.
+- **v0.3.0** (stable): first real-PyPI publication.
+- **v0.4.0**: cross-teeth anomalies, odontograma paralela de evolución (Disp. V.4), inalterabilidad + audit trail (Disp. V.3, V.13), strict B&W print CSS, radiographic-findings subfield.
 
 ## Contributing
 
