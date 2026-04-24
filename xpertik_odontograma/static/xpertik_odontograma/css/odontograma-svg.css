@@ -69,6 +69,24 @@
   fill: white;
   stroke: #aaa;
   stroke-width: 0.5;
+  cursor: pointer;
+}
+
+.xp-recuadro:hover rect {
+  filter: brightness(0.95);
+}
+
+.xp-recuadro:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+.xp-odontograma-widget[data-readonly="true"] .xp-recuadro {
+  cursor: default;
+}
+
+.xp-odontograma-widget[data-readonly="true"] .xp-recuadro:hover rect {
+  filter: none;
 }
 
 .xp-odontograma-widget[data-readonly="true"] .xp-face,

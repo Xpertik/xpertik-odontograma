@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Recuadros clickables (Anexo II)** — the Peru chart recuadros (sigla boxes above/below each tooth) are now click targets for the **global tooth state** popover. Closes the v0.3.0-alpha.1 UX gap where `implante`, `corona_definitiva`, `movilidad`, `ausente`, `fractura`, etc. had no click target. Selection writes to `tooth.estado` and clears `tooth.caras` / `tooth.apice` client-side to satisfy the strict validator's XOR invariant.
+- **Face popover scope tightened** — the per-face popover no longer lists `zona=recuadro` entries (global-only nomenclaturas). Those appear exclusively in the new recuadro popover. Prevents semantic mis-assignments and validator errors at save time.
+
 ## [0.3.0-alpha.1] - 2026-04-24
 
 ### Added

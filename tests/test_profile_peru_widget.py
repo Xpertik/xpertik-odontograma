@@ -96,6 +96,46 @@ def test_render_mixta_contains_all_quadrants():
 
 
 # ---------------------------------------------------------------------------
+# Recuadro click target (global tooth.estado popover)
+# ---------------------------------------------------------------------------
+
+
+def test_render_recuadros_carry_data_zone_attribute():
+    # The JS layer targets recuadros via `closest(".xp-recuadro")` and reads
+    # `data-zone="recuadro"` to route the popover to the global-state branch.
+    w = PeruOdontogramaWidget(denticion="permanente")
+    html = w.render("odontograma", {}, {})
+    assert 'data-zone="recuadro"' in html
+
+
+def test_render_recuadros_are_keyboard_accessible():
+    # role + tabindex + aria-label enable keyboard activation and SR announce.
+    w = PeruOdontogramaWidget(denticion="permanente")
+    html = w.render("odontograma", {}, {})
+    assert 'role="button"' in html
+    assert 'tabindex="0"' in html
+    assert 'aria-label="Estado global diente 16"' in html
+
+
+def test_render_recuadros_accept_pointer_events():
+    # pointer-events="all" on the wrapping <g> so the whole group catches
+    # clicks — the <rect> alone should not eat events.
+    w = PeruOdontogramaWidget(denticion="permanente")
+    html = w.render("odontograma", {}, {})
+    # Recuadros and arcade faces both emit pointer-events="all".
+    assert 'pointer-events="all"' in html
+
+
+def test_readonly_recuadros_drop_interactive_attrs():
+    # Readonly variant (INV-3) — no click / focus / aria-label on recuadros.
+    w = PeruReadOnlyOdontogramaWidget(denticion="permanente")
+    html = w.render("od", {"16": {"estado": "implante"}}, {})
+    assert 'role="button"' not in html
+    assert 'tabindex="0"' not in html
+    assert "Estado global diente" not in html
+
+
+# ---------------------------------------------------------------------------
 # Media composition order (ADR-U13, R-D-6)
 # ---------------------------------------------------------------------------
 

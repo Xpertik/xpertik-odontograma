@@ -3,8 +3,11 @@
  *
  * Attaches a contextual popover (HTML <dialog>) to each Peru SVG chart.
  * Catalog entries are filtered by the clicked zona:
- *   - face click   -> zona ∈ { corona, recuadro }
- *   - apice click  -> zona ∈ { raiz, sobre_apices }
+ *   - face click      -> zona ∈ { corona }        (per-face nomenclaturas)
+ *   - apice click     -> zona ∈ { raiz, sobre_apices }
+ *   - recuadro click  -> zona ∈ { recuadro, corona } global tooth.estado
+ *                        (Anexo II global states: implante, corona_definitiva,
+ *                         movilidad, ausente, fractura, extruido, etc.)
  * Cross-teeth entries (cross_teeth=true) appear disabled with a tooltip
  * pointing to v0.4.0 (ADR-U7 / D3).
  *
@@ -15,6 +18,13 @@
  *     affected face fill. Other overlays (aspa / corona ring / apice
  *     line / siglas) stay stale until form submit — documented as an
  *     alpha.1 limitation; full reactive re-render lands in alpha.2.
+ *
+ * XOR enforcement (client-side, mirrors strict validator):
+ *   - Assigning tooth.estado clears tooth.caras and tooth.apice client-side
+ *     so the save doesn't trip the `both_estado_and_caras` error.
+ *   - Assigning a face/apice state (when tooth.estado exists) is allowed by
+ *     the base validator only if estado is cleared first — recuadro popover
+ *     is the canonical way to set/clear the global branch.
  */
 (function () {
   "use strict";
@@ -111,11 +121,12 @@
       this.root.addEventListener("click", (e) => this._handlePointer(e));
 
       // Keyboard activation — SVG elements accept Enter / Space when
-      // focused (focusability is a11y-provided by consumers via tabindex
-      // injection at a later phase; for alpha.1 we honour any focus).
+      // focused. Recuadros ship with tabindex="0" (see renderer) so they
+      // participate in tab order; face/apice paths rely on consumer tabindex
+      // injection for alpha.1.
       this.root.addEventListener("keydown", (e) => {
         if (e.key !== "Enter" && e.key !== " ") return;
-        var target = e.target.closest(".xp-face, .xp-apice");
+        var target = e.target.closest(".xp-face, .xp-apice, .xp-recuadro");
         if (!target) return;
         e.preventDefault();
         target.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -137,6 +148,7 @@
     _handlePointer(e) {
       var face = e.target.closest(".xp-face");
       var apice = e.target.closest(".xp-apice");
+      var recuadro = e.target.closest(".xp-recuadro");
       if (face) {
         this._openPopover(
           "face",
@@ -147,6 +159,12 @@
         this._openPopover(
           "apice",
           apice.getAttribute("data-fdi"),
+          null
+        );
+      } else if (recuadro) {
+        this._openPopover(
+          "recuadro",
+          recuadro.getAttribute("data-fdi"),
           null
         );
       }
@@ -160,14 +178,28 @@
       var mainSelect = this.dialog.querySelector(".xp-popover__main");
       var paramsDiv = this.dialog.querySelector(".xp-popover__params");
 
-      title.textContent =
-        zoneType === "apice"
-          ? "Diente " + fdi + " — ápice"
-          : "Diente " + fdi + " — " + (faceKey || "cara");
+      if (zoneType === "apice") {
+        title.textContent = "Diente " + fdi + " — ápice";
+      } else if (zoneType === "recuadro") {
+        title.textContent = "Diente " + fdi + " — estado global";
+      } else {
+        title.textContent = "Diente " + fdi + " — " + (faceKey || "cara");
+      }
 
       // Filter catalog entries by allowed zonas for this zoneType.
-      var allowedZonas =
-        zoneType === "apice" ? ["raiz", "sobre_apices"] : ["corona", "recuadro"];
+      //   face      -> zona=corona only (per-face nomenclaturas)
+      //   apice     -> zona ∈ { raiz, sobre_apices }
+      //   recuadro  -> zona ∈ { recuadro, corona } (all whole-tooth globals;
+      //                catch-all picker — dentist can mark ausente, fractura,
+      //                extruido, implante, corona_definitiva, movilidad, …)
+      var allowedZonas;
+      if (zoneType === "apice") {
+        allowedZonas = ["raiz", "sobre_apices"];
+      } else if (zoneType === "recuadro") {
+        allowedZonas = ["recuadro", "corona"];
+      } else {
+        allowedZonas = ["corona"];
+      }
       var entries = [];
       for (var i = 0; i < allowedZonas.length; i++) {
         var bucket = this.catalog[allowedZonas[i]] || [];
@@ -196,6 +228,9 @@
       if (zoneType === "apice" && toothState.apice) {
         current = toothState.apice.estado || "";
         currentParams = toothState.apice.parametros || {};
+      } else if (zoneType === "recuadro") {
+        current = toothState.estado || "";
+        currentParams = toothState.parametros || {};
       } else if (
         zoneType === "face" &&
         toothState.caras &&
@@ -290,6 +325,33 @@
         } else if (tooth.apice) {
           delete tooth.apice;
         }
+      } else if (ctx.zoneType === "recuadro") {
+        // Global tooth.estado branch — XOR with caras/apice.
+        //
+        // The strict validator rejects `estado` + `caras`/`apice` coexistence
+        // (`both_estado_and_caras`). To keep save-on-submit frictionless we
+        // clear the per-zone branches when the user commits a global state.
+        if (newKey) {
+          tooth.estado = newKey;
+          if (Object.keys(newParams).length > 0) {
+            tooth.parametros = newParams;
+            // `ausente` per norm carries an optional `causa` — if the
+            // parametros schema exposes it, lift it to the tooth-level
+            // field the validator recognises.
+            if (newParams.causa !== undefined) {
+              tooth.causa = newParams.causa;
+            }
+          } else if (tooth.parametros) {
+            delete tooth.parametros;
+          }
+          // XOR enforcement — clear the per-zone branches.
+          if (tooth.caras) delete tooth.caras;
+          if (tooth.apice) delete tooth.apice;
+        } else {
+          if (tooth.estado) delete tooth.estado;
+          if (tooth.parametros) delete tooth.parametros;
+          if (tooth.causa) delete tooth.causa;
+        }
       } else {
         if (!tooth.caras) tooth.caras = {};
         if (newKey) {
@@ -312,7 +374,12 @@
     _minimalRepaint(ctx, newKey) {
       // Face fills are the one overlay we can repaint client-side without
       // rerunning the full renderer. The other overlays (aspa / corona
-      // ring / apice line / siglas) require a server re-render for now.
+      // ring / apice line / siglas / recuadro-driven global overlays)
+      // require a server re-render for now — documented as an alpha.1
+      // limitation. Global-state edits (zoneType=recuadro) touch
+      // tooth.estado which cascades into many overlays (aspa, corona
+      // ring, IMP label, grayed silhouette, sigla text) that the
+      // renderer owns; skip client-side paint for that branch.
       if (ctx.zoneType !== "face") return;
       var facePath = this.root.querySelector(
         '.xp-face[data-fdi="' + ctx.fdi + '"][data-face="' + ctx.faceKey + '"]'

@@ -159,7 +159,11 @@ def render_chart(
 
     y = 0
     # Recuadros ABOVE superior arcade.
-    parts.append(_render_recuadros(superior, value, catalog_by_zona, y=y))
+    parts.append(
+        _render_recuadros(
+            superior, value, catalog_by_zona, y=y, readonly=readonly
+        )
+    )
     y += RECUADRO_HEIGHT + ARCADE_GAP
 
     # Superior arcade (raíz drawn "up" for maxilar — flipped via CSS class).
@@ -189,7 +193,11 @@ def render_chart(
     y += TOOTH_HEIGHT + ARCADE_GAP
 
     # Recuadros BELOW inferior arcade.
-    parts.append(_render_recuadros(inferior, value, catalog_by_zona, y=y))
+    parts.append(
+        _render_recuadros(
+            inferior, value, catalog_by_zona, y=y, readonly=readonly
+        )
+    )
 
     parts.append("</svg>")
     return "".join(parts)
@@ -597,9 +605,24 @@ def _render_arcade(
 
 
 def _render_recuadros(
-    teeth: list[int], value: dict, catalog_by_zona: dict, *, y: int
+    teeth: list[int],
+    value: dict,
+    catalog_by_zona: dict,
+    *,
+    y: int,
+    readonly: bool = False,
 ) -> str:
-    """Render the Anexo II recuadros (sigla boxes) for a row of teeth."""
+    """Render the Anexo II recuadros (sigla boxes) for a row of teeth.
+
+    Each recuadro ``<g>`` is a click target for the **global tooth state**
+    popover (zona=recuadro + zona=corona globals per the Peru norm). The
+    group carries ``data-zone="recuadro"``, ``role="button"``,
+    ``tabindex="0"``, an ``aria-label``, and ``pointer-events="all"`` so
+    the whole group accepts pointer + keyboard activation.
+
+    When ``readonly`` is ``True`` we strip interactive attributes so the
+    chart renders as a passive image (INV-3 parity with arcade faces).
+    """
     parts: list[str] = [
         f'<g class="xp-recuadros" transform="translate(0 {y})">'
     ]
@@ -607,15 +630,31 @@ def _render_recuadros(
         tx = i * (TOOTH_WIDTH + TOOTH_GAP)
         entry = value.get(str(fdi)) or value.get(fdi) or {}
         sigla_text = sigla_for_tooth(entry, catalog_by_zona)
-        parts.append(
-            f'<g class="xp-recuadro" data-fdi="{fdi}" '
-            f'transform="translate({tx} 0)">'
-            f'<rect width="{TOOTH_WIDTH}" height="{RECUADRO_HEIGHT}" '
-            f'fill="white" stroke="#333" stroke-width="0.5"/>'
-            f'<text x="{TOOTH_WIDTH / 2}" y="{RECUADRO_HEIGHT * 0.7}" '
-            f'text-anchor="middle" font-size="10" fill="#1565c0" '
-            f'font-weight="bold">{html.escape(sigla_text)}</text>'
-            f"</g>"
-        )
+        if readonly:
+            parts.append(
+                f'<g class="xp-recuadro" data-fdi="{fdi}" '
+                f'data-zone="recuadro" '
+                f'transform="translate({tx} 0)">'
+                f'<rect width="{TOOTH_WIDTH}" height="{RECUADRO_HEIGHT}" '
+                f'fill="white" stroke="#333" stroke-width="0.5"/>'
+                f'<text x="{TOOTH_WIDTH / 2}" y="{RECUADRO_HEIGHT * 0.7}" '
+                f'text-anchor="middle" font-size="10" fill="#1565c0" '
+                f'font-weight="bold">{html.escape(sigla_text)}</text>'
+                f"</g>"
+            )
+        else:
+            parts.append(
+                f'<g class="xp-recuadro" data-fdi="{fdi}" '
+                f'data-zone="recuadro" role="button" tabindex="0" '
+                f'aria-label="Estado global diente {fdi}" '
+                f'pointer-events="all" '
+                f'transform="translate({tx} 0)">'
+                f'<rect width="{TOOTH_WIDTH}" height="{RECUADRO_HEIGHT}" '
+                f'fill="white" stroke="#333" stroke-width="0.5"/>'
+                f'<text x="{TOOTH_WIDTH / 2}" y="{RECUADRO_HEIGHT * 0.7}" '
+                f'text-anchor="middle" font-size="10" fill="#1565c0" '
+                f'font-weight="bold" pointer-events="none">{html.escape(sigla_text)}</text>'
+                f"</g>"
+            )
     parts.append("</g>")
     return "".join(parts)

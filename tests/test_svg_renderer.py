@@ -119,6 +119,40 @@ def test_render_chart_emits_recuadros_above_and_below() -> None:
     assert svg.count('class="xp-recuadros"') == 2
 
 
+def test_render_chart_recuadros_are_clickable() -> None:
+    # Recuadros must be click targets for the global-state popover.
+    # The JS layer relies on data-zone="recuadro" + role/tabindex for
+    # pointer + keyboard activation.
+    svg = render_chart({"16": {"estado": "implante"}}, "permanente")
+    assert 'data-zone="recuadro"' in svg
+    assert 'role="button"' in svg
+    assert 'tabindex="0"' in svg
+    # One aria-label per tooth recuadro so screen readers announce the target.
+    assert 'aria-label="Estado global diente 16"' in svg
+    # pointer-events="all" on the wrapping <g> so the whole group accepts clicks.
+    # (The inner <text> is pointer-events="none" so it doesn't eat bubbling.)
+    assert 'pointer-events="all"' in svg
+
+
+def test_render_chart_readonly_recuadros_have_no_interactive_attrs() -> None:
+    svg = render_chart(
+        {"16": {"estado": "implante"}}, "permanente", readonly=True
+    )
+    # No interactive attributes on recuadros in readonly mode.
+    assert 'role="button"' not in svg
+    assert 'tabindex="0"' not in svg
+    assert 'aria-label="Estado global diente 16"' not in svg
+    # But data-zone is still emitted as a structural marker.
+    assert 'data-zone="recuadro"' in svg
+
+
+def test_render_chart_recuadro_count_matches_teeth_count() -> None:
+    # One <g class="xp-recuadro"> per tooth (superior + inferior rows).
+    svg = render_chart({}, "permanente")
+    # 32 teeth → 32 recuadros.
+    assert svg.count('class="xp-recuadro"') == 32
+
+
 # ---------------------------------------------------------------------------
 # render_tooth
 # ---------------------------------------------------------------------------
