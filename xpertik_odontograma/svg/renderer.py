@@ -442,18 +442,18 @@ def _face_fills(
     return fills
 
 
-def _apice_fill(entry: dict, catalog_by_zona: dict) -> str:
-    """Return the fill color for the apice region (or ``"transparent"``)."""
-    apice = entry.get("apice") if isinstance(entry, dict) else None
-    if not isinstance(apice, dict):
-        return "transparent"
-    estado = apice.get("estado")
-    if not estado:
-        return "transparent"
-    for entries in catalog_by_zona.values():
-        for nom in entries:
-            if nom["key"] == estado:
-                return _symbolic_to_hex(nom.get("color_symbolic", "azul"))
+def _apice_fill(entry: dict, catalog_by_zona: dict) -> str:  # noqa: ARG001
+    """The apice ``<path>`` is a click target only — never a state visual.
+
+    State-driven visualizations for the root zone are emitted by
+    :func:`_render_state_overlays` (vertical line for ``tratamiento_pulpar``,
+    text ``"RR"`` for ``remanente_radicular``, etc.) — not by filling the
+    path. Filling the rectangle would dominate the visual and override the
+    norm-mandated overlays, producing large solid blocks over the raíz.
+
+    The path stays clickable via ``pointer-events="all"`` even though the
+    fill is transparent.
+    """
     return "transparent"
 
 
