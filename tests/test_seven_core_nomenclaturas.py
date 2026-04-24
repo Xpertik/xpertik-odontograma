@@ -54,7 +54,7 @@ def test_caries_paints_face_with_rojo_norma(catalog):
     svg = render_tooth(16, entry, catalog)
     # The oclusal face path carries the rojo norma fill attribute.
     assert 'data-face="oclusal_incisal"' in svg
-    assert f'fill="{ROJO_NORMA}"' in svg
+    assert f"fill: {ROJO_NORMA}" in svg
     # No overlay primitives for caries (face fill only).
     assert "xp-aspa" not in svg
     assert "xp-corona-ring" not in svg
@@ -83,7 +83,7 @@ def test_restauracion_paints_face_azul_and_propagates_material_sigla(
     }
     svg = render_tooth(16, entry, catalog)
     assert 'data-face="oclusal_incisal"' in svg
-    assert f'fill="{AZUL_NORMA}"' in svg
+    assert f"fill: {AZUL_NORMA}" in svg
     # Sigla derivation returns the material code for recuadro.
     assert sigla_for_tooth(entry, catalog) == material
 
@@ -181,7 +181,10 @@ def test_tratamiento_pulpar_renders_vertical_line_and_tipo_sigla(
 def test_caries_uses_rojo_not_azul(catalog):
     svg = render_tooth(16, {"caras": {"oclusal_incisal": "caries"}}, catalog)
     # The oclusal face must not be azul (that's restauracion's colour).
-    assert f'data-face="oclusal_incisal" d="M 19 17 L 31 17 L 31 33 L 19 33 Z" fill="{AZUL_NORMA}"' not in svg
+    assert (
+        f'data-face="oclusal_incisal" d="M 19 17 L 31 17 L 31 33 L 19 33 Z" style="fill: {AZUL_NORMA}'
+        not in svg
+    )
 
 
 def test_restauracion_uses_azul_not_rojo(catalog):
@@ -191,4 +194,7 @@ def test_restauracion_uses_azul_not_rojo(catalog):
         catalog,
     )
     # The face must not be rojo (that's caries' colour).
-    assert f'data-face="oclusal_incisal" d="M 19 17 L 31 17 L 31 33 L 19 33 Z" fill="{ROJO_NORMA}"' not in svg
+    assert (
+        f'data-face="oclusal_incisal" d="M 19 17 L 31 17 L 31 33 L 19 33 Z" style="fill: {ROJO_NORMA}'
+        not in svg
+    )

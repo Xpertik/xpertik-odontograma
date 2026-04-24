@@ -246,7 +246,7 @@ def render_tooth(
     parts.append(
         f'<path class="xp-apice" data-fdi="{fdi}" data-apice="true" '
         f'd="M {sx + 4} {sy + 40} L {sx + 36} {sy + 40} L {sx + 36} {sy + 80} L {sx + 4} {sy + 80} Z" '
-        f'fill="{apice_fill}" stroke="none"{interactive_attr}/>'
+        f'style="fill: {apice_fill}; stroke: none"{interactive_attr}/>'
     )
 
     # State-driven overlays (aspa, circle, IMP, vertical line, …).
@@ -490,7 +490,8 @@ def _face_paths(
         fill = fills.get(face_key, "transparent")
         paths.append(
             f'<path class="xp-face" data-fdi="{fdi}" data-face="{face_key}" '
-            f'd="{d}" fill="{fill}" stroke="#999" stroke-width="0.3"{interactive_attr}/>'
+            f'd="{d}" style="fill: {fill}; stroke: #999; stroke-width: 0.3"'
+            f"{interactive_attr}/>"
         )
     return paths
 

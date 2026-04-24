@@ -21,15 +21,14 @@
   opacity: 0.85;
 }
 
+/* Note: fill + stroke are set inline via style="" on each path so renderer-emitted */
+/* state colors win over CSS specificity. Hover uses filter to coexist with state fill. */
 .xp-face {
-  fill: transparent;
-  stroke: #666;
-  stroke-width: 0.5;
   cursor: pointer;
 }
 
 .xp-face:hover {
-  fill: rgba(0, 0, 255, 0.05);
+  filter: brightness(1.15);
 }
 
 .xp-face--state {
@@ -37,14 +36,11 @@
 }
 
 .xp-apice {
-  fill: transparent;
-  stroke: #666;
-  stroke-width: 0.5;
   cursor: pointer;
 }
 
 .xp-apice:hover {
-  fill: rgba(0, 0, 255, 0.05);
+  filter: brightness(1.15);
 }
 
 .xp-fdi-label {
