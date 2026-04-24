@@ -1,0 +1,13 @@
+{% load i18n %}
+<div class="xp-odontograma-widget" data-readonly="{% if widget.readonly %}true{% else %}false{% endif %}">
+  {{ widget.svg_markup|safe }}
+  {% if not widget.readonly %}
+  <input type="hidden"
+         name="{{ widget.name }}"
+         id="id_{{ widget.name }}"
+         value="{{ widget.value_json }}">
+  <p class="xp-odontograma-placeholder-note">
+    {% blocktrans %}Versión alpha — v0.3.0 rediseño SVG. Feedback clínico en curso.{% endblocktrans %}
+  </p>
+  {% endif %}
+</div>

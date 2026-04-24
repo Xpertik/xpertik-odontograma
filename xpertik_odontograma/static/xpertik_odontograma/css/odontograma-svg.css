@@ -1,0 +1,136 @@
+/* Odontograma SVG — base (non-peru) widget */
+.xp-odontograma-widget {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.xp-odontograma-widget svg.xp-odontograma-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  min-width: 800px;
+}
+
+.xp-tooth {
+  cursor: pointer;
+}
+
+.xp-tooth:hover {
+  opacity: 0.85;
+}
+
+.xp-face {
+  fill: transparent;
+  stroke: #666;
+  stroke-width: 0.5;
+  cursor: pointer;
+}
+
+.xp-face:hover {
+  fill: rgba(0, 0, 255, 0.05);
+}
+
+.xp-face--state {
+  cursor: pointer;
+}
+
+.xp-apice {
+  fill: transparent;
+  stroke: #666;
+  stroke-width: 0.5;
+  cursor: pointer;
+}
+
+.xp-apice:hover {
+  fill: rgba(0, 0, 255, 0.05);
+}
+
+.xp-fdi-label {
+  font-size: 11px;
+  font-weight: bold;
+  text-anchor: middle;
+  fill: #333;
+  pointer-events: none;
+}
+
+.xp-sigla {
+  font-size: 10px;
+  text-anchor: middle;
+  fill: currentColor;
+  pointer-events: none;
+}
+
+.xp-midline {
+  stroke: #888;
+  stroke-dasharray: 2 3;
+  stroke-width: 1;
+  fill: none;
+}
+
+.xp-recuadro {
+  fill: white;
+  stroke: #aaa;
+  stroke-width: 0.5;
+}
+
+.xp-odontograma-widget[data-readonly="true"] .xp-face,
+.xp-odontograma-widget[data-readonly="true"] .xp-apice {
+  cursor: default;
+}
+
+.xp-odontograma-widget[data-readonly="true"] .xp-face:hover,
+.xp-odontograma-widget[data-readonly="true"] .xp-apice:hover {
+  fill: transparent;
+}
+
+/* Focus ring for accessibility */
+.xp-face:focus,
+.xp-apice:focus,
+.xp-tooth:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 1px;
+}
+
+/* Tooth with global estado (grayed out) */
+.xp-tooth--global-state use {
+  opacity: 0.4;
+}
+
+/* Placeholder note */
+.xp-odontograma-placeholder-note {
+  font-size: 0.85em;
+  color: #666;
+  font-style: italic;
+  margin-top: 0.5em;
+}
+
+/* Print styles */
+@media print {
+  .xp-odontograma-widget {
+    overflow: visible;
+  }
+
+  .xp-odontograma-widget svg.xp-odontograma-svg {
+    min-width: auto;
+    max-width: 100%;
+    page-break-inside: avoid;
+  }
+
+  .xp-face:hover,
+  .xp-apice:hover {
+    fill: transparent;
+  }
+
+  .xp-face,
+  .xp-apice,
+  .xp-tooth {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .xp-odontograma-placeholder-note {
+    display: none;
+  }
+}
