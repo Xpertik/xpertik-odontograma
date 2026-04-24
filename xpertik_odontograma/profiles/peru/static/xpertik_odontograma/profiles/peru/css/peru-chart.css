@@ -26,3 +26,104 @@
   text-anchor: middle;
   pointer-events: none;
 }
+
+/* -------------------------------------------------------------------------
+ * Popover (<dialog>) — contextual nomenclatura selector.
+ * ------------------------------------------------------------------------- */
+
+dialog.xp-popover {
+  padding: 0;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  min-width: 280px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+dialog.xp-popover::backdrop {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.xp-popover__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin: 0;
+}
+
+.xp-popover__title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.xp-popover__main-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.875rem;
+  color: #334155;
+}
+
+.xp-popover__main,
+.xp-popover__param select {
+  padding: 0.4rem 0.5rem;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 0.9rem;
+}
+
+.xp-popover__main option[disabled] {
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.xp-popover__params {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.xp-popover__param {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.xp-popover__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.xp-popover__cancel,
+.xp-popover__accept {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid #94a3b8;
+  border-radius: 4px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.xp-popover__accept {
+  background: #1565c0;
+  border-color: #1565c0;
+  color: #fff;
+}
+
+.xp-popover__accept:hover {
+  background: #0d47a1;
+  border-color: #0d47a1;
+}
+
+.xp-popover__cancel:hover {
+  background: #f1f5f9;
+}
