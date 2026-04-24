@@ -1,0 +1,28 @@
+/* Peru profile additions to base SVG chart */
+.xp-peru .xp-recuadro {
+  fill: #fff;
+  stroke: #444;
+  stroke-width: 0.5;
+}
+
+.xp-peru .xp-recuadro--superior {
+  /* 3 rows above superior teeth */
+}
+
+.xp-peru .xp-recuadro--inferior {
+  /* 3 rows below inferior teeth */
+}
+
+.xp-peru .xp-midline--peru {
+  stroke: #333;
+  stroke-width: 1.5;
+  stroke-dasharray: none;
+}
+
+.xp-peru .xp-section-heading {
+  font-size: 12px;
+  font-weight: bold;
+  fill: #333;
+  text-anchor: middle;
+  pointer-events: none;
+}
