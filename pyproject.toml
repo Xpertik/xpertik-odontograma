@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "xpertik-odontograma"
-version = "0.2.0"
+version = "0.3.0a1"
 description = "Custom Django Field + Widget for FDI/ISO-3950 odontograms. Capture per-tooth, per-face dental findings from Django admin or any ModelForm — no AJAX, no extra endpoints."
 readme = "README.md"
 license = { text = "MIT" }
