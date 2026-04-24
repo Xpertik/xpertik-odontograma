@@ -74,5 +74,48 @@ Run these BEFORE pushing the `v0.2.0` tag — the tag triggers the publish workf
 
 ## v0.2.0 → v0.3.0 roadmap
 
-- v0.2.0 remains **TestPyPI only** (no real PyPI publish). Real PyPI publishing is still gated on v0.3.0 UI conformance + clinical sign-off.
-- v0.3.0 will require a second Trusted Publisher entry on https://pypi.org/ (real PyPI) with the same config pattern.
+- v0.2.0 remains **TestPyPI only** (no real PyPI publish). Real PyPI publishing is still gated on v0.3.0 stable UI conformance + clinical sign-off.
+- v0.3.0 stable will require a second Trusted Publisher entry on https://pypi.org/ (real PyPI) with the same config pattern.
+
+## v0.3.0 alpha release strategy
+
+v0.3.0 is delivered as a sequence of TestPyPI pre-releases (PEP 440 alpha segment) so a practicing odontologist can review the SVG widget iteratively before stable:
+
+- `v0.3.0a1` — SVG widget, 7 core nomenclaturas, apice data model, Anexo II recuadros, print CSS.
+- `v0.3.0a2` — silhouette polish post dentist review, full client-side reactive re-render, `<dialog>` fallback smoke-tested on Safari < 15.4 + NVDA / VoiceOver.
+- `v0.3.0a3` — remaining 19 nomenclaturas rendered with their specific SVG primitives.
+- `v0.3.0` (stable) — first publication to real PyPI.
+
+### Alpha tag format
+
+- Git tag: `v0.3.0a1`, `v0.3.0a2`, `v0.3.0a3`. Matches PEP 440 `0.3.0a1` in `pyproject.toml`.
+- TestPyPI filename: `xpertik_odontograma-0.3.0a1-py3-none-any.whl`.
+- The GitHub release workflow (`release-testpypi.yml`) publishes alphas to TestPyPI only. Real PyPI is gated on the stable `v0.3.0` tag.
+
+### Pre-tag verification checklist (alpha)
+
+Run BEFORE pushing an alpha tag — the tag triggers the publish workflow:
+
+1. `CHANGELOG.md` has a `## [0.3.0-alpha.N] - YYYY-MM-DD` entry with real date (no `Unreleased` placeholder).
+2. `pyproject.toml` `version = "0.3.0aN"` matches `xpertik_odontograma/__init__.py` `__version__`.
+3. `.venv/bin/pytest -ra tests/` → all green (≥444 tests for alpha.1).
+4. `.venv/bin/ruff check .` → `All checks passed!`.
+5. `.venv/bin/python -m build` → produces `dist/xpertik_odontograma-0.3.0aN-py3-none-any.whl` + sdist.
+6. `unzip -l dist/xpertik_odontograma-0.3.0aN-py3-none-any.whl | grep -E "(svg|profiles/peru|static|templates)"` → SVG module + peru profile + static + templates all present.
+7. `rm -rf dist/ build/` to keep the tree tidy before tagging.
+
+### Alpha feedback loop
+
+Alpha releases are NOT consumed by production. They exist to collect structured feedback:
+
+1. Ship alpha.1 → post to internal dentist channel with the TestPyPI install command.
+2. Capture review notes in `docs/feedback/alpha1.md` (one bullet per finding).
+3. Prioritize findings into alpha.2 tasks via SDD (`/sdd-new v0-3-0-alpha-2-polish`).
+4. Repeat for alpha.2 → alpha.3 → stable v0.3.0.
+
+### v0.3.0-alpha.1 tag command (human action — do NOT automate from a sub-agent)
+
+```
+git tag -a v0.3.0a1 -m "Release 0.3.0a1 — Peru SVG widget alpha (7 core nomenclaturas)"
+git push origin v0.3.0a1
+```
