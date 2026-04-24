@@ -36,6 +36,11 @@ class OdontogramaPeruInicialField(OdontogramaField):
     migrations are driven by the class identity alone — the field's path
     (``xpertik_odontograma.profiles.peru.fields.OdontogramaPeruInicialField``)
     already encodes the profile (REQ-6.4, ADR-4).
+
+    ``formfield()`` binds :class:`PeruOdontogramaWidget` by default so Peru
+    model fields render the Peru-specific SVG chart (Anexo II recuadros +
+    catalog-driven popover) without consumers having to wire the widget
+    manually (REQ-6.3).
     """
 
     description = _(
@@ -57,3 +62,13 @@ class OdontogramaPeruInicialField(OdontogramaField):
         # Class identity encodes the profile; keep it out of migrations.
         kwargs.pop("profile", None)
         return name, path, args, kwargs
+
+    def formfield(self, **kwargs: Any):  # noqa: ANN201 — Django returns forms.Field
+        # Lazy import to avoid a circular dependency: peru.widgets imports
+        # xpertik_odontograma.widgets which imports xpertik_odontograma.validators
+        # (needed for ``sanitize_odontograma_for_render``) — the import chain
+        # is harmless at runtime but cleaner to defer until formfield is called.
+        from .widgets import PeruOdontogramaWidget
+
+        kwargs.setdefault("widget", PeruOdontogramaWidget(denticion=self.denticion))
+        return super().formfield(**kwargs)

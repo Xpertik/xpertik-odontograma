@@ -1,0 +1,19 @@
+{% load i18n %}
+<div class="xp-odontograma-widget xp-peru" data-readonly="{% if widget.readonly %}true{% else %}false{% endif %}">
+  {{ widget.svg_markup|safe }}
+
+  {% if not widget.readonly %}
+  <input type="hidden"
+         name="{{ widget.name }}"
+         id="id_{{ widget.name }}"
+         value="{{ widget.value_json }}">
+
+  <script type="application/json" id="id_{{ widget.name }}__catalog">
+    {{ widget.catalog_json|safe }}
+  </script>
+
+  <p class="xp-odontograma-placeholder-note">
+    {% blocktrans %}Perfil Perú — v0.3.0 alpha. Validación clínica en curso.{% endblocktrans %}
+  </p>
+  {% endif %}
+</div>
