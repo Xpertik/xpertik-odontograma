@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0-alpha.1] - 2026-04-24
+
+### Added
+
+- **SVG interactive chart** replacing the HTML placeholder widget (v0.1.0/v0.2.0).
+- **Tooth silhouettes** — 6 SVG `<symbol>` definitions for incisivo, canino, premolar, molar, temporal-anterior, temporal-posterior. Reused via `<use xlink:href="">`. Traced approximations based on Anexo II of the Peruvian norm (polish planned for alpha.2).
+- **Apical zone** as a first-class data model zone: per-tooth optional `apice` key alongside `caras`. Nomenclaturas with `zona=RAIZ` (tratamiento_pulpar, remanente_radicular) register here.
+- **Anexo II layout** — 3 rows of recuadros above superior teeth + 3 rows below inferior teeth. Siglas auto-derived from tooth state (read-only computed).
+- **Contextual popover** (`<dialog>`) — click on any face/apice opens filtered list of catalog nomenclaturas valid for that zona. Parametros sub-selector for movilidad (grado), corona_definitiva (tipo), restauracion (material), tratamiento_pulpar (tipo).
+- **Cross-teeth nomenclaturas** visible in selector but disabled with tooltip `Disponible en v0.4.0` (diastema, geminación, transposición, supernumerario, aparato ortodóntico fijo/removible).
+- **7 core nomenclaturas** rendered with their normative graphical representations: caries (rojo fill), restauracion (azul fill + material sigla), diente_ausente (aspa azul), corona_definitiva (circunferencia azul + tipo sigla), implante (IMP en recuadro + silueta grayed), movilidad (M{grado} en recuadro), tratamiento_pulpar (línea vertical azul en raíz + tipo sigla).
+- **Print CSS** — A4 landscape @page, color preservation via print-color-adjust, popover/selector chrome hidden.
+- **Keyboard navigation** — Tab cycles through zones, Enter/Space activates, ESC dismisses popover. ARIA labels on every interactive element.
+- New `xpertik_odontograma/svg/` package with `silhouettes.py` + `renderer.py`.
+- New `xpertik_odontograma.profiles.peru.widgets.PeruOdontogramaWidget` + readonly variant.
+- Backward-compat aliases: `OdontogramaWidget` and `ReadOnlyOdontogramaWidget` still importable (now point to SVG versions).
+- 128 new tests (444 total) across new test files: `test_svg_silhouettes.py`, `test_svg_renderer.py`, `test_apice_roundtrip.py`, `test_backward_compat_v0_2.py`, `test_seven_core_nomenclaturas.py`, `test_cross_teeth_disabled.py`, `test_svg_print_layout.py`, `test_profile_peru_widget.py`.
+
+### Changed
+
+- **`OdontogramaPeruInicialField.formfield()`** now binds `PeruOdontogramaWidget` by default for peru-profiled fields.
+- **Base `OdontogramaWidget`** now produces SVG output instead of HTML placeholder. Consumers using `widget.render(...)` directly will see SVG markup.
+- **JSON schema** extended (additive): per-tooth `apice: {estado, parametros?}` optional key. XOR invariant extended: `estado` (global) XOR (`caras` or `apice`).
+
+### Known limitations (v0.3.0-alpha.1)
+
+- **Partial client-side re-render**: selecting a face nomenclatura updates the face fill color live. Other overlays (aspa, corona ring, tratamiento_pulpar line, auto-derived siglas in recuadros) remain stale until form submit + reload. Full reactive rendering lands in alpha.2.
+- **Silhouettes are geometric approximations**. Dentist review drives polish in alpha.2.
+- **Alpha.1 covers 7 core nomenclaturas**. The remaining 19 catalog entries (desgaste_oclusal_incisal, discromico, ectopico, clavija, extruido, intruido, edentulo_total, fractura, giroversion, impactacion, macrodoncia, microdoncia, migracion, protesis_removible, protesis_total, remanente_radicular, restauracion_temporal, semi_impactacion, corona_temporal) are in the catalog but not yet rendered with their specific SVG primitives — they appear in the popover but render as plain state color. Full rendering ships in alpha.3.
+- **`<dialog>` element**: modern browsers supported. Safari < 15.4 uses the `setAttribute('open')` fallback path in `peru-chart.js`; full manual-focus-trap `<div>` polyfill evaluated for alpha.2 if NVDA/VoiceOver smoke reports gaps.
+- **Cross-teeth nomenclaturas** (6 entries) still REJECTED by the strict validator. Visible as disabled in popover with v0.4.0 pointer.
+
+### BREAKING CHANGES
+
+- **Legacy HTML templates DELETED**: `_tooth_cell.html`, `_tooth_grid.html`, `widget.html`, `widget_readonly.html` are no longer present. Consumers who extended these templates must migrate to the new SVG structure.
+- **Legacy static files DELETED**: `odontograma.css` and `odontograma.js` replaced by `odontograma-svg.css` and `odontograma-svg.js`. Consumers who referenced the old paths directly must update.
+- **Base widget output change**: `OdontogramaWidget.render(...)` now returns SVG markup instead of HTML grid. API-level: `.get_context()` has new keys (`svg_markup`, `value_json`, `catalog_by_zona_json`); old keys (`tooth_rows`, `sections`) removed.
+
+### Backward compatibility
+
+- v0.2.0 data (without `apice` key) validates + renders without migration.
+- `OdontogramaField(profile=None)` behavior unchanged from v0.2.0.
+- The 89 v0.1.0 tests + 170 v0.2.0 tests + 185 v0.3.0-alpha.1 tests = 444 total, all green.
+
 ## [0.2.0] - 2026-04-19
 
 ### Added
@@ -83,5 +127,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `vestibular_bucal` face key always labels as "Vestibular" in the UI. The "bucal" synonym distinction for anteriores is under clinical review for v0.2.0.
 - No `.po` translation catalogs shipped. Package defaults use `gettext_lazy`; consumer projects that need Spanish-to-another-language translation can generate catalogs themselves.
 
+[0.3.0-alpha.1]: https://github.com/xpertik/xpertik-odontograma/releases/tag/v0.3.0a1
 [0.2.0]: https://github.com/xpertik/xpertik-odontograma/releases/tag/v0.2.0
 [0.1.0]: https://github.com/xpertik/xpertik-odontograma/releases/tag/v0.1.0
