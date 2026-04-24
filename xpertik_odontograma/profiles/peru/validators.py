@@ -211,6 +211,62 @@ def _validate_tooth_entry_peru(
                 if nom.cross_teeth:
                     errors.append(_reject_cross_teeth(nom, fdi_code))
 
+    # --- apice branch (v0.3.0 — REQ-4.3, REQ-4.4) --------------------------
+    #
+    # The base validator (validate_tooth_entry) already enforces that `apice`
+    # is a dict with a required `estado` key. Here the peru layer validates
+    # that the specific nomenclatura is catalog-known AND lives in `zona=RAIZ`
+    # (the anatomical zone that the apice data slot represents). Coronal
+    # entries (zona=CORONA) in apice are rejected with code
+    # `wrong_zone_for_apice`. Cross-teeth in apice are impossible under the
+    # shipped catalog (cross_teeth entries are zona=ENTRE_PIEZAS or
+    # SOBRE_APICES, not RAIZ) — the defensive check catches pathological
+    # consumer extensions.
+    if "apice" in entry:
+        apice = entry["apice"]
+        if isinstance(apice, dict):
+            apice_estado = apice.get("estado")
+            if apice_estado:
+                if apice_estado not in catalog:
+                    errors.append(
+                        ValidationError(
+                            _(
+                                "Pieza %(code)s apice: nomenclatura '%(key)s' "
+                                "desconocida en el catálogo del perfil Perú."
+                            ),
+                            code="unknown_nomenclatura_peru",
+                            params={"code": fdi_code, "key": apice_estado},
+                        )
+                    )
+                else:
+                    nom = catalog[apice_estado]
+                    if nom.cross_teeth:
+                        errors.append(_reject_cross_teeth(nom, fdi_code))
+                    elif nom.zona != Zona.RAIZ:
+                        errors.append(
+                            ValidationError(
+                                _(
+                                    "Pieza %(code)s apice: nomenclatura "
+                                    "'%(key)s' pertenece a la zona "
+                                    "'%(zona)s'; sólo nomenclaturas con "
+                                    "zona=RAIZ son admisibles en 'apice'."
+                                ),
+                                code="wrong_zone_for_apice",
+                                params={
+                                    "code": fdi_code,
+                                    "key": apice_estado,
+                                    "zona": nom.zona.value,
+                                },
+                            )
+                        )
+                    else:
+                        try:
+                            _validate_parametros(
+                                nom, fdi_code, apice.get("parametros", {})
+                            )
+                        except ValidationError as exc:
+                            errors.append(exc)
+
     return errors
 
 
