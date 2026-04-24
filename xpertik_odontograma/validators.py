@@ -58,8 +58,22 @@ _legacy_logger = logging.getLogger("xpertik_odontograma.legacy_state")
 # ---------------------------------------------------------------------------
 
 # Allowed top-level keys per branch.
-_ALLOWED_ESTADO_KEYS: frozenset[str] = frozenset({"estado", "causa"})
-_ALLOWED_CARAS_KEYS: frozenset[str] = frozenset({"caras"})
+#
+# v0.3.0 additions (additive, v0.2.0 data without ``apice`` stays valid):
+#
+# * ``apice`` — optional per-tooth object ``{estado, parametros?}`` that
+#   captures radicular-zone findings (tratamiento pulpar, remanente
+#   radicular). It can coexist with ``caras`` (different anatomical
+#   zones) but NOT with the whole-tooth ``estado`` branch (XOR extended).
+# * ``parametros`` — optional per-tooth parameters dict (e.g. movilidad
+#   grado, corona tipo, restauracion material). Profiles own the schema.
+# * ``especificaciones`` — optional per-tooth free-text (peru profile).
+_ALLOWED_ESTADO_KEYS: frozenset[str] = frozenset(
+    {"estado", "causa", "parametros", "especificaciones"}
+)
+_ALLOWED_CARAS_KEYS: frozenset[str] = frozenset(
+    {"caras", "apice", "parametros", "especificaciones"}
+)
 
 
 def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
@@ -72,6 +86,16 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
     * ``entry_not_dict``, ``both_estado_and_caras``, ``neither_estado_nor_caras``
     * ``unknown_estado``, ``invalid_causa``, ``unexpected_keys``
     * ``caras_not_dict``, ``unknown_face``, ``unknown_face_value``
+    * ``apice_not_dict``, ``apice_missing_estado`` (v0.3.0+)
+
+    v0.3.0 schema extensions (additive, backward-compatible with v0.2.0):
+
+    * ``apice: {"estado": <key>, "parametros": {...}?}`` — optional per-tooth
+      radicular-zone finding (REQ-4.1). Coexists with ``caras`` (different
+      anatomical zones) but mutually excludes the whole-tooth ``estado``
+      branch (XOR extended: ``estado`` XOR (``caras`` or ``apice``)).
+      The peru profile layer validates that ``apice.estado`` is a
+      ``zona=RAIZ`` catalog entry.
 
     Args:
         code: FDI code as it appeared in the JSON (typically a string — JSON
@@ -107,17 +131,30 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
 
     has_estado = "estado" in entry
     has_caras = "caras" in entry
+    has_apice = "apice" in entry
 
-    # --- 3. XOR: exactly one of `estado` / `caras` -------------------------
-    if has_estado and has_caras:
+    # --- 3. XOR extended: `estado` XOR (`caras` or `apice`) ----------------
+    #
+    # v0.3.0 adds `apice` as a sibling of `caras` (different anatomical zone).
+    # The whole-tooth `estado` branch still mutually excludes per-zone data:
+    # you can't say "this tooth is ausente" AND "it has caries on oclusal" at
+    # the same time. But `caras` and `apice` CAN coexist (e.g. caries oclusal
+    # + tratamiento pulpar — clinically realistic).
+    if has_estado and (has_caras or has_apice):
         raise ValidationError(
-            _("Tooth %(code)s has both 'estado' and 'caras'; exactly one is allowed."),
+            _(
+                "Tooth %(code)s has both 'estado' and per-zone data "
+                "(caras/apice); exactly one branch is allowed."
+            ),
             code="both_estado_and_caras",
             params={"code": fdi_int},
         )
-    if not has_estado and not has_caras:
+    if not has_estado and not has_caras and not has_apice:
         raise ValidationError(
-            _("Tooth %(code)s has neither 'estado' nor 'caras'; exactly one is required."),
+            _(
+                "Tooth %(code)s has neither 'estado' nor 'caras' nor 'apice'; "
+                "at least one is required."
+            ),
             code="neither_estado_nor_caras",
             params={"code": fdi_int},
         )
@@ -158,38 +195,57 @@ def validate_tooth_entry(code: Any, entry: Any, denticion: str) -> None:
                 )
         return
 
-    # --- 4b. `caras` branch ------------------------------------------------
+    # --- 4b. `caras` and/or `apice` branch ---------------------------------
     extra = set(entry) - _ALLOWED_CARAS_KEYS
     if extra:
         raise ValidationError(
-            _("Tooth %(code)s has unexpected keys %(extra)s under 'caras' branch."),
+            _("Tooth %(code)s has unexpected keys %(extra)s under 'caras/apice' branch."),
             code="unexpected_keys",
             params={"code": fdi_int, "extra": sorted(extra)},
         )
 
-    caras = entry["caras"]
-    if not isinstance(caras, dict):
-        raise ValidationError(
-            _("'caras' for tooth %(code)s must be a dict, got %(type)s."),
-            code="caras_not_dict",
-            params={"code": fdi_int, "type": type(caras).__name__},
-        )
+    if has_caras:
+        caras = entry["caras"]
+        if not isinstance(caras, dict):
+            raise ValidationError(
+                _("'caras' for tooth %(code)s must be a dict, got %(type)s."),
+                code="caras_not_dict",
+                params={"code": fdi_int, "type": type(caras).__name__},
+            )
 
-    for face_key, face_value in caras.items():
-        if face_key not in CARAS:
+        for face_key, face_value in caras.items():
+            if face_key not in CARAS:
+                raise ValidationError(
+                    _("Unknown face key %(face)r on tooth %(code)s."),
+                    code="unknown_face",
+                    params={"face": face_key, "code": fdi_int},
+                )
+            if face_value is None:
+                continue
+            if face_value not in package_settings.ESTADOS_CARA:
+                raise ValidationError(
+                    _("Unknown face-state %(state)r on face %(face)s of tooth %(code)s."),
+                    code="unknown_face_value",
+                    params={"state": face_value, "face": face_key, "code": fdi_int},
+                )
+
+    if has_apice:
+        apice = entry["apice"]
+        if not isinstance(apice, dict):
             raise ValidationError(
-                _("Unknown face key %(face)r on tooth %(code)s."),
-                code="unknown_face",
-                params={"face": face_key, "code": fdi_int},
+                _("'apice' for tooth %(code)s must be a dict, got %(type)s."),
+                code="apice_not_dict",
+                params={"code": fdi_int, "type": type(apice).__name__},
             )
-        if face_value is None:
-            continue
-        if face_value not in package_settings.ESTADOS_CARA:
+        if "estado" not in apice:
             raise ValidationError(
-                _("Unknown face-state %(state)r on face %(face)s of tooth %(code)s."),
-                code="unknown_face_value",
-                params={"state": face_value, "face": face_key, "code": fdi_int},
+                _("'apice' for tooth %(code)s is missing the required 'estado' key."),
+                code="apice_missing_estado",
+                params={"code": fdi_int},
             )
+        # The specific `estado` value and optional `parametros` are validated
+        # by the active profile layer (e.g. peru) — the base validator is
+        # profile-agnostic and only enforces shape here.
 
 
 def validate_odontograma_strict(
