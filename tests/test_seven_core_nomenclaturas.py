@@ -34,7 +34,6 @@ from xpertik_odontograma.svg.renderer import (
     sigla_for_tooth,
 )
 
-
 ROJO_NORMA = "#d32f2f"
 AZUL_NORMA = "#1565c0"
 

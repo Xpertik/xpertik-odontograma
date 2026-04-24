@@ -18,7 +18,6 @@ import re
 from xpertik_odontograma.profiles.peru.states import CATALOG
 from xpertik_odontograma.profiles.peru.widgets import PeruOdontogramaWidget
 
-
 # Nomenclaturas flagged ``cross_teeth=True`` in the v0.2.0 norm catalog.
 CROSS_TEETH_KEYS: frozenset[str] = frozenset(
     n.key for n in CATALOG if n.cross_teeth
