@@ -106,31 +106,51 @@
   margin-top: 0.5em;
 }
 
-/* Print styles */
+/* Print styles — norm-compliant output on A4 landscape (REQ-9). */
 @media print {
   .xp-odontograma-widget {
-    overflow: visible;
+    overflow: visible !important;
   }
 
+  /* Hide all interactive chrome: popovers, selects, notes.
+     Native <dialog> already disappears when not open; we also hide any
+     leftover overlay nodes defensively. */
+  .xp-odontograma-widget .xp-popover,
+  .xp-odontograma-widget dialog.xp-popover,
+  .xp-odontograma-widget .xp-odontograma-placeholder-note,
+  .xp-odontograma-widget select:not(.xp-keep-in-print),
+  .xp-odontograma-widget button {
+    display: none !important;
+  }
+
+  /* The chart fills the printable width — no horizontal scrolling clips. */
   .xp-odontograma-widget svg.xp-odontograma-svg {
-    min-width: auto;
-    max-width: 100%;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
     page-break-inside: avoid;
   }
 
+  /* Disable any hover state that might have leaked from the screen rules. */
   .xp-face:hover,
   .xp-apice:hover {
     fill: transparent;
   }
 
+  /* Preserve the norm colours (rojo/azul) — browsers otherwise drop
+     backgrounds on print per the default user-agent heuristic. */
   .xp-face,
   .xp-apice,
+  .xp-recuadro,
   .xp-tooth {
-    print-color-adjust: exact;
-    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
   }
 
-  .xp-odontograma-placeholder-note {
-    display: none;
+  /* A4 landscape — dentist-preferred orientation for dual-arcade charts. */
+  @page {
+    size: A4 landscape;
+    margin: 1cm;
   }
 }
