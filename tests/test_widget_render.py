@@ -1,147 +1,178 @@
-"""Tests for :mod:`xpertik_odontograma.widgets`.
+"""Tests for :mod:`xpertik_odontograma.widgets` (v0.3.0 SVG redesign).
 
-Widgets are exercised at three levels:
+v0.3.0 swapped the legacy HTML grid for a server-rendered ``<svg>`` chart.
+This module exercises the SVG widget at three levels:
 
-* **Context shape** — :meth:`BaseOdontogramaWidget.get_context` populates
-  the keys the shared ``_tooth_grid.html`` partial expects (REQ-7.1, REQ-7.5,
-  ADR-2, ADR-11).
-* **HTML rendering** — ``OdontogramaWidget`` renders the hidden ``<input>``;
-  ``ReadOnlyOdontogramaWidget`` does NOT emit any ``<input>`` (REQ-7.2,
-  REQ-7.3).
-* **Media declaration** — editable ships CSS + JS, readonly ships CSS only
-  (REQ-7.2, REQ-7.3).
+* **Context shape** — :meth:`OdontogramaSvgWidget.get_context` exposes the
+  keys the new ``svg_chart.html`` template needs (``svg_markup``,
+  ``value_json``, ``catalog_by_zona_json``, ``denticion``, ``readonly``).
+* **HTML rendering** — ``OdontogramaSvgWidget`` emits a top-level ``<svg``
+  plus the hidden ``<input>`` carrying the JSON payload;
+  ``ReadOnlyOdontogramaSvgWidget`` omits the ``<input>``.
+* **Media declaration** — editable ships CSS + JS; readonly ships CSS
+  only (INV-3).
 
-Note: the shipped widget context does NOT expose a ``face_label_map`` —
-face labels are pre-resolved onto each ``tooth_rows[i].faces[j].label``
-entry so ``_tooth_grid.html`` can render without custom template filters.
-Phase 2 deviated from the spec's tuple-keyed map for that reason (tuples
-aren't indexable from Django templates). We test the shipped shape, not the
-spec suggestion.
+The legacy aliases ``OdontogramaWidget`` /
+``ReadOnlyOdontogramaWidget`` are also exercised so v0.1/v0.2 consumers
+upgrading to v0.3.0 keep their import lines working.
 """
 
 from __future__ import annotations
 
-from xpertik_odontograma.constants import CARAS
-from xpertik_odontograma.widgets import OdontogramaWidget, ReadOnlyOdontogramaWidget
+from xpertik_odontograma.widgets import (
+    OdontogramaSvgWidget,
+    OdontogramaWidget,
+    ReadOnlyOdontogramaSvgWidget,
+    ReadOnlyOdontogramaWidget,
+)
+
+# ---------------------------------------------------------------------------
+# Backwards-compatible aliases (ADR-U12)
+# ---------------------------------------------------------------------------
+
+
+def test_legacy_alias_widget_is_svg_widget():
+    # ``OdontogramaWidget`` is a drop-in alias for the new SVG widget so
+    # v0.1/v0.2 consumers do not need to rewrite imports.
+    assert OdontogramaWidget is OdontogramaSvgWidget
+
+
+def test_legacy_alias_readonly_is_svg_readonly():
+    assert ReadOnlyOdontogramaWidget is ReadOnlyOdontogramaSvgWidget
+
 
 # ---------------------------------------------------------------------------
 # Context shape
 # ---------------------------------------------------------------------------
 
 
-def test_context_permanente_has_32_teeth():
-    w = OdontogramaWidget(denticion="permanente")
+def test_context_exposes_denticion():
+    w = OdontogramaSvgWidget(denticion="mixta")
     ctx = w.get_context("foo", {}, {})
-    assert len(ctx["widget"]["teeth"]) == 32
-
-
-def test_context_temporal_has_20_teeth():
-    w = OdontogramaWidget(denticion="temporal")
-    ctx = w.get_context("foo", {}, {})
-    assert len(ctx["widget"]["teeth"]) == 20
-
-
-def test_context_mixta_has_52_teeth():
-    w = OdontogramaWidget(denticion="mixta")
-    ctx = w.get_context("foo", {}, {})
-    assert len(ctx["widget"]["teeth"]) == 52
-
-
-def test_context_faces_are_canonical_tuple():
-    w = OdontogramaWidget(denticion="permanente")
-    ctx = w.get_context("foo", {}, {})
-    assert ctx["widget"]["faces"] == CARAS
+    assert ctx["widget"]["denticion"] == "mixta"
 
 
 def test_context_editable_readonly_false():
-    w = OdontogramaWidget(denticion="permanente")
+    w = OdontogramaSvgWidget(denticion="permanente")
     ctx = w.get_context("foo", {}, {})
     assert ctx["widget"]["readonly"] is False
 
 
 def test_context_readonly_true_for_readonly_widget():
-    w = ReadOnlyOdontogramaWidget(denticion="permanente")
+    w = ReadOnlyOdontogramaSvgWidget(denticion="permanente")
     ctx = w.get_context("foo", {}, {})
     assert ctx["widget"]["readonly"] is True
 
 
-def test_context_tooth_rows_carry_face_labels_for_posterior_upper():
-    # Tooth 16 is an upper molar (posterior) → oclusal + palatino.
-    w = OdontogramaWidget(denticion="permanente")
+def test_context_exposes_svg_markup_starting_with_svg_tag():
+    w = OdontogramaSvgWidget(denticion="permanente")
     ctx = w.get_context("foo", {}, {})
-    # Find the row for 16.
-    rows = ctx["widget"]["tooth_rows"]
-    row_16 = next(r for r in rows if r["fdi"] == 16)
-    assert row_16["mode"] == "caras"
-    # Every row starts with five blank face cells (one per canonical key).
-    labels = {f["key"]: str(f["label"]) for f in row_16["faces"]}
-    assert labels["oclusal_incisal"] == "Oclusal"
-    assert labels["lingual_palatino"] == "Palatino"
+    markup = str(ctx["widget"]["svg_markup"])
+    assert markup.startswith("<svg")
 
 
-def test_context_tooth_rows_carry_face_labels_for_anterior_lower():
-    # Tooth 31 is a lower-left incisor → incisal + lingual.
-    w = OdontogramaWidget(denticion="permanente")
+def test_context_exposes_value_json_for_empty_dict():
+    w = OdontogramaSvgWidget(denticion="permanente")
     ctx = w.get_context("foo", {}, {})
-    rows = ctx["widget"]["tooth_rows"]
-    row_31 = next(r for r in rows if r["fdi"] == 31)
-    labels = {f["key"]: str(f["label"]) for f in row_31["faces"]}
-    assert labels["oclusal_incisal"] == "Incisal"
-    assert labels["lingual_palatino"] == "Lingual"
+    # value_json is a serialized JSON string — "{}" for an empty dict.
+    assert ctx["widget"]["value_json"] == "{}"
+
+
+def test_context_catalog_by_zona_empty_for_base_widget():
+    # Base widget has no profile catalog; popover JSON is empty.
+    w = OdontogramaSvgWidget(denticion="permanente")
+    ctx = w.get_context("foo", {}, {})
+    assert ctx["widget"]["catalog_by_zona"] == {}
+    assert ctx["widget"]["catalog_by_zona_json"] == "{}"
 
 
 # ---------------------------------------------------------------------------
-# Render — editable widget emits the hidden input
+# Render — editable widget emits <svg> + hidden input
 # ---------------------------------------------------------------------------
+
+
+def test_editable_render_contains_svg_tag():
+    w = OdontogramaSvgWidget(denticion="mixta")
+    html = w.render("odontograma_mixta", {}, {})
+    assert "<svg" in html
 
 
 def test_editable_render_contains_hidden_input():
-    w = OdontogramaWidget(denticion="mixta")
+    w = OdontogramaSvgWidget(denticion="mixta")
     html = w.render("odontograma_mixta", {}, {})
     assert 'type="hidden"' in html
     # The hidden input carries the field name.
     assert 'name="odontograma_mixta"' in html
 
 
-def test_editable_render_contains_all_permanente_fdi_codes():
-    w = OdontogramaWidget(denticion="permanente")
+def test_editable_render_contains_silhouette_use_reference():
+    # Every tooth is drawn via <use xlink:href="#xp-..."/> — the chart
+    # reuses symbol defs once and references them per tooth.
+    w = OdontogramaSvgWidget(denticion="permanente")
     html = w.render("od", {}, {})
-    # Every permanent FDI code appears somewhere in the rendered output.
-    for fdi in (11, 18, 21, 28, 31, 38, 41, 48):
-        assert f">{fdi}<" in html or str(fdi) in html
+    assert '<use xlink:href="#xp-molar"' in html
+
+
+def test_editable_render_contains_face_paths():
+    # Face-level click targets live in <path class="xp-face"> with a
+    # data-face attribute naming the canonical face key.
+    w = OdontogramaSvgWidget(denticion="permanente")
+    html = w.render("od", {}, {})
+    assert '<path class="xp-face"' in html
+    assert 'data-face="oclusal_incisal"' in html
+
+
+def test_editable_render_contains_apice_path():
+    # Apice click target lives in <path class="xp-apice">.
+    w = OdontogramaSvgWidget(denticion="permanente")
+    html = w.render("od", {}, {})
+    assert '<path class="xp-apice"' in html
+
+
+def test_editable_render_contains_fdi_label_for_every_quadrant():
+    # Every quadrant should surface at least one FDI code via the
+    # xp-fdi-label text element.
+    w = OdontogramaSvgWidget(denticion="permanente")
+    html = w.render("od", {}, {})
+    assert 'class="xp-fdi-label"' in html
+    # Spot-check one code per quadrant (11, 28, 38, 48).
+    for fdi in (11, 28, 38, 48):
+        assert f">{fdi}<" in html
 
 
 def test_editable_render_mixta_contains_primary_and_permanent_codes():
-    w = OdontogramaWidget(denticion="mixta")
+    w = OdontogramaSvgWidget(denticion="mixta")
     html = w.render("od", {}, {})
     # Sample one permanent + one primary.
-    assert "16" in html
-    assert "55" in html
+    assert ">16<" in html
+    assert ">55<" in html
 
 
 # ---------------------------------------------------------------------------
-# Render — readonly widget emits NO hidden input and NO <select>
+# Render — readonly widget emits NO hidden input
 # ---------------------------------------------------------------------------
 
 
 def test_readonly_render_has_no_hidden_input():
-    w = ReadOnlyOdontogramaWidget(denticion="permanente")
-    html = w.render("od", {"16": {"estado": "corona"}}, {})
+    w = ReadOnlyOdontogramaSvgWidget(denticion="permanente")
+    html = w.render("od", {"16": {"estado": "corona_definitiva"}}, {})
     assert "<input" not in html
 
 
-def test_readonly_render_has_no_select():
-    # Readonly MUST NOT allow any state mutation — no <select> elements.
-    w = ReadOnlyOdontogramaWidget(denticion="permanente")
-    html = w.render("od", {"16": {"estado": "corona"}}, {})
+def test_readonly_render_has_no_dialog_or_select():
+    # Readonly MUST NOT ship any interactive chrome.
+    w = ReadOnlyOdontogramaSvgWidget(denticion="permanente")
+    html = w.render("od", {"16": {"estado": "corona_definitiva"}}, {})
+    assert "<dialog" not in html
     assert "<select" not in html
 
 
-def test_readonly_render_still_shows_fdi_codes():
-    w = ReadOnlyOdontogramaWidget(denticion="permanente")
+def test_readonly_render_still_shows_svg_and_fdi_codes():
+    w = ReadOnlyOdontogramaSvgWidget(denticion="permanente")
     html = w.render("od", {}, {})
+    assert "<svg" in html
     for fdi in (11, 16, 36, 48):
-        assert str(fdi) in html
+        assert f">{fdi}<" in html
 
 
 # ---------------------------------------------------------------------------
@@ -149,15 +180,15 @@ def test_readonly_render_still_shows_fdi_codes():
 # ---------------------------------------------------------------------------
 
 
-def test_editable_widget_media_includes_css_and_js():
-    media = OdontogramaWidget().media
+def test_editable_widget_media_includes_svg_css_and_js():
+    media = OdontogramaSvgWidget().media
     media_str = str(media)
-    assert "odontograma.css" in media_str
-    assert "odontograma.js" in media_str
+    assert "odontograma-svg.css" in media_str
+    assert "odontograma-svg.js" in media_str
 
 
-def test_readonly_widget_media_has_css_only():
-    media = ReadOnlyOdontogramaWidget().media
+def test_readonly_widget_media_has_svg_css_only():
+    media = ReadOnlyOdontogramaSvgWidget().media
     media_str = str(media)
-    assert "odontograma.css" in media_str
-    assert "odontograma.js" not in media_str
+    assert "odontograma-svg.css" in media_str
+    assert "odontograma-svg.js" not in media_str
