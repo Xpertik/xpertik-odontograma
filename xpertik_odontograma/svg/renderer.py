@@ -199,8 +199,37 @@ def render_chart(
         )
     )
 
+    # Quadrant dividers (Anexo II layout): vertical line between cuadrantes
+    # 1|2 + 4|3, horizontal line between maxilar superior + mandíbula inferior.
+    # Emitted last so they paint on top of recuadros + silhouettes for clarity.
+    parts.append(_render_quadrant_dividers(width, height, n_cols))
+
     parts.append("</svg>")
     return "".join(parts)
+
+
+def _render_quadrant_dividers(width: int, height: int, n_cols: int) -> str:
+    """Return SVG markup for the cross-shaped quadrant dividers.
+
+    The vertical line separates the right half of the patient (cuadrantes
+    1 + 4) from the left half (cuadrantes 2 + 3). The horizontal line
+    separates the maxilar superior (cuadrantes 1 + 2) from the mandíbula
+    inferior (cuadrantes 4 + 3). The intersection marks the midline +
+    occlusal plane, matching the Anexo II reference layout.
+    """
+    # Vertical: in the middle of MIDLINE_GAP, halfway across n_cols teeth.
+    half_cols = n_cols // 2
+    x_mid = half_cols * (TOOTH_WIDTH + TOOTH_GAP) + (MIDLINE_GAP // 2)
+
+    # Horizontal: middle of the ARCADE_GAP between the two arcadas.
+    y_mid = RECUADRO_HEIGHT + ARCADE_GAP + TOOTH_HEIGHT + (ARCADE_GAP // 2)
+
+    return (
+        f'<line class="xp-quadrant-divider xp-quadrant-divider--vertical" '
+        f'x1="{x_mid}" y1="0" x2="{x_mid}" y2="{height}"/>'
+        f'<line class="xp-quadrant-divider xp-quadrant-divider--horizontal" '
+        f'x1="0" y1="{y_mid}" x2="{width}" y2="{y_mid}"/>'
+    )
 
 
 def render_tooth(

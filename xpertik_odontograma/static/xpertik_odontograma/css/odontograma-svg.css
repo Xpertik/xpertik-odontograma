@@ -65,6 +65,17 @@
   fill: none;
 }
 
+.xp-quadrant-divider {
+  stroke: #555;
+  stroke-width: 1.5;
+  fill: none;
+  pointer-events: none;
+}
+
+.xp-quadrant-divider--vertical {
+  stroke-width: 2;
+}
+
 .xp-recuadro {
   fill: white;
   stroke: #aaa;
