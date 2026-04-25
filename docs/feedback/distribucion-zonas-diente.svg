@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 720" font-family="system-ui, -apple-system, sans-serif">
+  <!-- Title -->
+  <text x="450" y="35" text-anchor="middle" font-size="22" font-weight="bold" fill="#222">Distribución de zonas clickables por diente</text>
+  <text x="450" y="60" text-anchor="middle" font-size="14" fill="#666">xpertik-odontograma v0.3.0-alpha.1 — perfil Perú (Norma Técnica)</text>
+
+  <!-- Tooth area: centered around x=300 -->
+
+  <!-- Recuadro Anexo II (superior) -->
+  <rect x="200" y="100" width="200" height="50" fill="#fff" stroke="#333" stroke-width="1.5"/>
+  <text x="300" y="132" text-anchor="middle" font-size="16" fill="#1565c0" font-weight="bold">CMC</text>
+
+  <!-- Crown box -->
+  <g>
+    <!-- Vestibular (top band of crown) -->
+    <rect x="200" y="180" width="200" height="55" fill="#e3f2fd" stroke="#666" stroke-width="1"/>
+    <text x="300" y="214" text-anchor="middle" font-size="14" font-weight="bold" fill="#0d47a1">VESTIBULAR / BUCAL</text>
+
+    <!-- Middle row: mesial | oclusal | distal -->
+    <g>
+      <rect x="200" y="240" width="65" height="80" fill="#fff3e0" stroke="#666" stroke-width="1"/>
+      <text x="232" y="285" text-anchor="middle" font-size="13" font-weight="bold" fill="#e65100">MESIAL</text>
+
+      <rect x="270" y="240" width="60" height="80" fill="#fce4ec" stroke="#666" stroke-width="1"/>
+      <text x="300" y="280" text-anchor="middle" font-size="13" font-weight="bold" fill="#880e4f">OCLUSAL</text>
+      <text x="300" y="295" text-anchor="middle" font-size="11" fill="#880e4f">(o INCISAL</text>
+      <text x="300" y="308" text-anchor="middle" font-size="11" fill="#880e4f">en anteriores)</text>
+
+      <rect x="335" y="240" width="65" height="80" fill="#fff3e0" stroke="#666" stroke-width="1"/>
+      <text x="367" y="285" text-anchor="middle" font-size="13" font-weight="bold" fill="#e65100">DISTAL</text>
+    </g>
+
+    <!-- Lingual/Palatino (bottom band of crown) -->
+    <rect x="200" y="325" width="200" height="55" fill="#e8f5e9" stroke="#666" stroke-width="1"/>
+    <text x="300" y="359" text-anchor="middle" font-size="14" font-weight="bold" fill="#1b5e20">LINGUAL / PALATINO</text>
+  </g>
+
+  <!-- Root (apice) -->
+  <path d="M 215 380 Q 220 510 245 615 L 355 615 Q 380 510 385 380 Z" fill="#f3e5f5" stroke="#666" stroke-width="1"/>
+  <text x="300" y="490" text-anchor="middle" font-size="14" font-weight="bold" fill="#4a148c">ÁPICE / RAÍZ</text>
+
+  <!-- FDI label -->
+  <text x="300" y="660" text-anchor="middle" font-size="22" font-weight="bold" fill="#222">16</text>
+  <text x="300" y="685" text-anchor="middle" font-size="11" fill="#888">(número FDI/ISO 3950)</text>
+
+  <!-- Annotations on the right side -->
+
+  <!-- 1. Recuadro Anexo II -->
+  <line x1="400" y1="125" x2="500" y2="125" stroke="#333" stroke-width="1"/>
+  <circle cx="400" cy="125" r="3" fill="#333"/>
+  <text x="510" y="115" font-size="14" font-weight="bold" fill="#1565c0">1. Recuadro (Anexo II)</text>
+  <text x="510" y="133" font-size="12" fill="#444">Click → popover con estado GLOBAL del diente</text>
+  <text x="510" y="148" font-size="11" fill="#666" font-style="italic">implante, corona, ausente, movilidad, etc.</text>
+
+  <!-- 2. Vestibular -->
+  <line x1="400" y1="207" x2="500" y2="207" stroke="#333" stroke-width="1"/>
+  <circle cx="400" cy="207" r="3" fill="#333"/>
+  <text x="510" y="200" font-size="14" font-weight="bold" fill="#0d47a1">2. Vestibular / Bucal</text>
+  <text x="510" y="218" font-size="12" fill="#444">Cara externa (lado labio/mejilla)</text>
+
+  <!-- 3. Mesial -->
+  <line x1="232" y1="320" x2="120" y2="380" stroke="#333" stroke-width="1"/>
+  <circle cx="232" cy="320" r="3" fill="#333"/>
+  <text x="20" y="395" font-size="14" font-weight="bold" fill="#e65100">3. Mesial</text>
+  <text x="20" y="413" font-size="11" fill="#444">Cara hacia la línea media</text>
+
+  <!-- 4. Oclusal/Incisal -->
+  <line x1="300" y1="320" x2="300" y2="500" stroke="#333" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="555" y="380" font-size="14" font-weight="bold" fill="#880e4f">4. Oclusal / Incisal</text>
+  <text x="555" y="398" font-size="12" fill="#444">Cara masticatoria (posteriores) o</text>
+  <text x="555" y="412" font-size="12" fill="#444">borde cortante (anteriores)</text>
+
+  <!-- 5. Distal -->
+  <line x1="367" y1="320" x2="500" y2="380" stroke="#333" stroke-width="1"/>
+  <circle cx="367" cy="320" r="3" fill="#333"/>
+  <text x="510" y="395" font-size="14" font-weight="bold" fill="#e65100">5. Distal</text>
+  <text x="510" y="413" font-size="11" fill="#444">Cara opuesta a la línea media</text>
+
+  <!-- 6. Lingual -->
+  <line x1="400" y1="352" x2="510" y2="445" stroke="#333" stroke-width="1"/>
+  <circle cx="400" cy="352" r="3" fill="#333"/>
+  <text x="510" y="455" font-size="14" font-weight="bold" fill="#1b5e20">6. Lingual / Palatino</text>
+  <text x="510" y="473" font-size="12" fill="#444">Cara interna (lado lengua/paladar)</text>
+  <text x="510" y="487" font-size="11" fill="#666" font-style="italic">"Lingual" en inferiores, "Palatino" en superiores</text>
+
+  <!-- 7. Apice -->
+  <line x1="385" y1="490" x2="510" y2="540" stroke="#333" stroke-width="1"/>
+  <circle cx="385" cy="490" r="3" fill="#333"/>
+  <text x="510" y="550" font-size="14" font-weight="bold" fill="#4a148c">7. Ápice / Raíz</text>
+  <text x="510" y="568" font-size="12" fill="#444">Click → popover con estado de RAÍZ</text>
+  <text x="510" y="582" font-size="11" fill="#666" font-style="italic">tratamiento pulpar, remanente radicular</text>
+
+  <!-- 8. FDI -->
+  <line x1="320" y1="660" x2="500" y2="660" stroke="#333" stroke-width="1" stroke-dasharray="3 2"/>
+  <text x="510" y="655" font-size="14" font-weight="bold" fill="#222">8. Número FDI</text>
+  <text x="510" y="673" font-size="12" fill="#444">Identificador de la pieza (no clickable)</text>
+
+  <!-- Legend at the bottom -->
+  <g transform="translate(20 700)">
+    <text x="0" y="0" font-size="10" fill="#666">Distribución de zonas — para referencia clínica al testear el widget en el admin de Django.</text>
+  </g>
+</svg>
