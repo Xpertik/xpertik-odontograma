@@ -1,140 +1,99 @@
 # Catálogo de nomenclaturas — perfil Perú v0.3.0-alpha.1
 
-> **Propósito**: listado completo de las **32 nomenclaturas** del catálogo
-> VI.1 de la **Norma Técnica del Odontograma** (Colegio Odontológico del
-> Perú) que el paquete `xpertik-odontograma` implementa actualmente.
->
-> Para validar con el odontólogo: ¿están todas las nomenclaturas? ¿alguna
-> falta o sobra? ¿el matching key/sigla/cláusula es correcto?
+> **Propósito**: lo que el `OdontogramaPeruInicialField` contempla
+> **actualmente** (con representación gráfica conforme a la norma) y, al
+> final, lo que **no está contemplado todavía** (en catálogo pero
+> pendiente de implementación, o diferido a versiones posteriores).
 >
 > **Versión del paquete**: `xpertik-odontograma==0.3.0a1`
 > **Generado desde**: `xpertik_odontograma.profiles.peru.states.CATALOG`
-> **Fuente normativa**: `docs/norms/norma-tecnica-odontograma-peru.pdf`
+> **Norma fuente**: `docs/norms/norma-tecnica-odontograma-peru.pdf`
 
 ---
 
-## Resumen
+## Resumen ejecutivo
 
-| Métrica | Cantidad |
+| Estado | Cantidad |
 | --- | --- |
-| Entries totales en catálogo | **32** |
-| Disponibles para uso clínico (no cross-teeth) | **26** |
-| Diferidas a v0.4.0 (cross-teeth, anomalías entre piezas o aparatos) | **6** |
-| Con representación gráfica específica conforme a la norma (alpha.1) | **8** |
-| En catálogo con sigla pero sin primitiva gráfica específica (alpha.3) | **18** |
-
-**Nota**: VI.1.24 está ausente del PDF oficial (la numeración salta de 1.23
-a 1.25). Documentado como `AUSENCIA_NORMATIVA_VI_1_24` en código —
-pendiente confirmación con el Colegio Odontológico.
-
-## Leyenda de status
-
-- ✅ **Conforme alpha.1** — la representación gráfica específica de la
-  norma está implementada (aspa, círculo, línea, sigla en recuadro, etc.).
-- ⏳ **alpha.3** — la nomenclatura está en el catálogo, valida correctamente,
-  pero el render todavía es genérico (color plano de cara). La primitiva
-  específica se implementa en alpha.3.
-- 🔒 **v0.4.0** — diferida; nomenclatura entre piezas (cross-teeth) o
-  aparato ortodóntico que requiere modelo de datos extendido.
+| ✅ **Implementado en alpha.1 — conforme a la norma** | **8** |
+| ⏳ Pendiente para alpha.3 (en catálogo, sin primitiva gráfica específica) | 18 |
+| 🔒 Diferido a v0.4.0 (cross-teeth + aparatos ortodónticos) | 6 |
+| **Total catálogo** | **32** |
 
 ---
 
-## Hallazgos (categoría: hallazgo)
+# ✅ Contemplado actualmente (alpha.1)
 
-| # | Cláusula | Key | Sigla | Color | Zona | Descripción norma | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 1 | VI.1.3 | `caries` | — | rojo | corona | Lesión cariosa siguiendo su forma en las superficies dentarias comprometidas, totalmente pintada en rojo | ✅ |
-| 2 | VI.1.6 | `desgaste_oclusal_incisal` | DES | azul | recuadro | Siglas "DES" en mayúsculas azul en el recuadro | ⏳ |
-| 3 | VI.1.8 | `ausente` | — | azul | corona | Aspa (X) azul sobre la figura de la pieza dentaria | ✅ |
-| 4 | VI.1.14 | `edentulo_total` | — | azul | corona | Línea recta horizontal azul sobre las coronas de las piezas ausentes del maxilar edéntulo | ⏳ |
-| 5 | VI.1.15 | `fractura` | — | rojo | corona | Línea recta roja, en el sentido de la fractura, sobre corona y/o raíz | ⏳ |
-| 6 | VI.1.27 | `remanente_radicular` | RR | rojo | raíz | Siglas "RR" en mayúsculas rojo sobre la raíz | ✅ |
+Lo que el odontograma **muestra correctamente** y el field valida según
+la norma. **Estas 8 nomenclaturas son las que el odontólogo puede usar
+hoy con representación gráfica conforme a la Norma Técnica del Colegio
+Odontológico del Perú.**
 
-## Tratamientos (categoría: tratamiento)
+## Hallazgos
 
-| # | Cláusula | Key | Sigla | Color | Zona | Descripción norma | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 7 | VI.1.4 | `corona_definitiva` | — | azul | recuadro | Circunferencia azul encerrando la corona; siglas del tipo en recuadro | ✅ |
-| 8 | VI.1.5 | `corona_temporal` | — | rojo | corona | Circunferencia roja encerrando la corona | ⏳ |
-| 9 | VI.1.19 | `implante` | IMP | azul | recuadro | Siglas "IMP" en mayúsculas azul en el recuadro de la pieza reemplazada | ✅ |
-| 10 | VI.1.25 | `protesis_removible` | — | azul | sobre ápices | Dos líneas horizontales paralelas azul a nivel de los ápices (rojo si mal estado) | ⏳ |
-| 11 | VI.1.26 | `protesis_total` | — | azul | corona | Dos líneas paralelas horizontales azul sobre las coronas (rojo si mal estado) | ⏳ |
-| 12 | VI.1.28 | `restauracion` | — | azul | corona | Restauración pintada azul siguiendo forma en superficies; sigla material en recuadro | ✅ |
-| 13 | VI.1.29 | `restauracion_temporal` | — | rojo | corona | Contorno en rojo siguiendo la forma en las superficies comprometidas | ⏳ |
-| 14 | VI.1.33 | `tratamiento_pulpar` | — | azul | raíz | Línea recta vertical azul en la raíz; siglas del tipo en recuadro | ✅ |
+| # | Cláusula | Key | Sigla | Color | Zona | Descripción y representación gráfica |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | **VI.1.3** | `caries` | — | rojo | corona | Lesión cariosa pintada en **rojo** sobre las superficies (caras) comprometidas |
+| 2 | **VI.1.8** | `ausente` | — | azul | corona | **Aspa (X) azul** sobre la silueta del diente |
+| 3 | **VI.1.27** | `remanente_radicular` | RR | rojo | raíz | Siglas "**RR**" en **rojo** sobre la raíz |
 
-### Tipos de Corona Definitiva (parámetros de VI.1.4)
+## Tratamientos
 
-| Sigla | Significado |
-| --- | --- |
-| CC | Corona completa metálica |
-| CF | Corona fenestrada |
-| CMC | Corona metal-cerámica |
-| CV | Corona veneer (frente estético) |
-| CJ | Corona jacket (estética libre de metal) |
-| 3-4, 4-5, 7-8 | Corona parcial metálica (porción del diente cubierta) |
+| # | Cláusula | Key | Sigla | Color | Zona | Descripción y representación gráfica |
+| --- | --- | --- | --- | --- | --- | --- |
+| 4 | **VI.1.4** | `corona_definitiva` | (tipo) | azul | recuadro | **Circunferencia azul** alrededor de la corona + sigla del tipo en recuadro |
+| 5 | **VI.1.19** | `implante` | IMP | azul | recuadro | Silueta **grayed** + "**IMP**" en recuadro superior |
+| 6 | **VI.1.28** | `restauracion` | (material) | azul | corona | Cara afectada pintada en **azul** + sigla del material en recuadro |
+| 7 | **VI.1.33** | `tratamiento_pulpar` | (tipo) | azul | raíz | **Línea vertical azul** sobre la raíz + sigla del tipo en recuadro |
 
-### Materiales de Restauración (parámetros de VI.1.28)
+## Anomalías
+
+| # | Cláusula | Key | Sigla | Color | Zona | Descripción y representación gráfica |
+| --- | --- | --- | --- | --- | --- | --- |
+| 8 | **VI.1.23** | `movilidad` | M + grado | azul | recuadro | "**M**" + grado (1, 2 o 3) en **azul** dentro del recuadro |
+
+## Parámetros disponibles
+
+### Tipos de Corona Definitiva (`corona_definitiva.parametros.tipo`)
 
 | Sigla | Significado |
 | --- | --- |
-| AM | Amalgama |
-| R | Resina |
-| IV | Ionómero de vidrio |
-| IM | Incrustación metálica |
-| IE | Incrustación estética |
+| **CC** | Corona completa metálica |
+| **CF** | Corona fenestrada |
+| **CMC** | Corona metal-cerámica |
+| **CV** | Corona veneer (frente estético) |
+| **CJ** | Corona jacket (estética libre de metal) |
+| **3-4** / **4-5** / **7-8** | Corona parcial metálica |
 
-### Tipos de Tratamiento Pulpar (parámetros de VI.1.33)
+### Materiales de Restauración (`restauracion.parametros.material`)
 
 | Sigla | Significado |
 | --- | --- |
-| TC | Tratamiento de conductos |
-| PC | Pulpectomía |
-| PP | Pulpotomía |
+| **AM** | Amalgama |
+| **R** | Resina |
+| **IV** | Ionómero de vidrio |
+| **IM** | Incrustación metálica |
+| **IE** | Incrustación estética |
 
-## Anomalías (categoría: anomalía)
+### Tipos de Tratamiento Pulpar (`tratamiento_pulpar.parametros.tipo`)
 
-### Por pieza (sin cross-teeth)
+| Sigla | Significado |
+| --- | --- |
+| **TC** | Tratamiento de conductos |
+| **PC** | Pulpectomía |
+| **PP** | Pulpotomía |
 
-| # | Cláusula | Key | Sigla | Color | Zona | Descripción norma | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 15 | VI.1.9 | `discromico` | DIS | azul | recuadro | Siglas "DIS" en mayúsculas azul en recuadro | ⏳ |
-| 16 | VI.1.10 | `ectopico` | E | azul | recuadro | Letra "E" mayúscula azul en recuadro | ⏳ |
-| 17 | VI.1.11 | `clavija` | — | azul | recuadro | Triángulo azul circunscribiendo el número de la pieza | ⏳ |
-| 18 | VI.1.12 | `extruido` | — | azul | corona | Flecha azul dirigida hacia el plano oclusal | ⏳ |
-| 19 | VI.1.13 | `intruido` | — | azul | corona | Flecha recta vertical azul dirigida hacia el ápice | ⏳ |
-| 20 | VI.1.17 | `giroversion` | — | azul | corona | Flecha curva azul siguiendo el sentido de la giroversión a nivel oclusal | ⏳ |
-| 21 | VI.1.18 | `impactacion` | I | azul | recuadro | Letra "I" mayúscula azul en recuadro | ⏳ |
-| 22 | VI.1.20 | `macrodoncia` | MAC | azul | recuadro | Siglas "MAC" en mayúsculas azul en recuadro | ⏳ |
-| 23 | VI.1.21 | `microdoncia` | MIC | azul | recuadro | Siglas "MIC" en mayúsculas azul en recuadro | ⏳ |
-| 24 | VI.1.22 | `migracion` | — | azul | corona | Flecha recta horizontal azul siguiendo el sentido de la migración a nivel oclusal | ⏳ |
-| 25 | VI.1.23 | `movilidad` | M + grado | azul | recuadro | "M" + grado (1/2/3) azul en recuadro. Clasificación en especificaciones | ✅ |
-| 26 | VI.1.30 | `semi_impactacion` | SI | azul | recuadro | Siglas "SI" en mayúsculas azul en recuadro | ⏳ |
+### Grados de Movilidad (`movilidad.parametros.grado`)
 
-### Entre piezas (cross-teeth — diferidas a v0.4.0)
+| Valor | Significado |
+| --- | --- |
+| **1** | Movilidad horizontal grado I |
+| **2** | Movilidad horizontal grado II |
+| **3** | Movilidad horizontal y vertical (grado III) |
 
-| # | Cláusula | Key | Sigla | Color | Zona | Descripción norma | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 27 | VI.1.7 | `diastema` | — | azul | entre piezas | Paréntesis invertido azul entre las piezas dentarias | 🔒 |
-| 28 | VI.1.16 | `geminacion_fusion` | — | azul | entre piezas | Dos circunferencias azules interceptadas encerrando los números de las piezas involucradas | 🔒 |
-| 29 | VI.1.31 | `supernumerario` | S | azul | entre piezas | Letra "S" mayúscula encerrada en circunferencia azul, entre los ápices de las piezas adyacentes | 🔒 |
-| 30 | VI.1.32 | `transposicion` | — | azul | entre piezas | Dos flechas curvas azul entrecruzadas, a la altura de los números de las piezas involucradas | 🔒 |
+### Causas de Ausencia (cuando `estado = ausente`)
 
-## Ortodónticos (categoría: ortodóntico — diferidos a v0.4.0)
-
-| # | Cláusula | Key | Sigla | Color | Zona | Descripción norma | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 31 | VI.1.1 | `aparato_orto_fijo` | — | azul | sobre ápices | Cuadrados con cruz en su interior a nivel de los ápices, unidos con línea recta. Azul (buen estado) o rojo (mal estado) | 🔒 |
-| 32 | VI.1.2 | `aparato_orto_removible` | — | azul | sobre ápices | Línea en zig-zag a la altura de los ápices del maxilar en tratamiento. Azul (buen estado) o rojo (mal estado) | 🔒 |
-
----
-
-## Causas de ausencia (cuando `estado = ausente`)
-
-Cuando una pieza tiene estado `ausente`, opcionalmente se registra la
-**causa**:
-
-| Sigla / valor | Significado |
+| Valor | Significado |
 | --- | --- |
 | `extraccion` | Pieza extraída |
 | `exfoliacion` | Pieza exfoliada (caída fisiológica de pieza temporal) |
@@ -142,42 +101,99 @@ Cuando una pieza tiene estado `ausente`, opcionalmente se registra la
 
 ---
 
-## Validación clínica con el odontólogo
+# Pendiente — NO contemplado todavía
 
-Pasarle este documento al profesional clínico junto con la sesión en el
-admin de Django. Preguntarle específicamente:
+Las siguientes nomenclaturas **están en el catálogo y se pueden guardar y
+validar**, pero **el render todavía no muestra su primitiva gráfica
+específica conforme a la norma**. Aparecen en el popover y se aceptan en
+formularios pero se ven como color plano de cara o sigla genérica en
+recuadro.
 
-1. **Completitud** — ¿el catálogo tiene las 32 nomenclaturas que prescribe
-   la norma? ¿falta alguna? ¿sobra alguna?
+## ⏳ alpha.3 — Pendiente representación gráfica específica
 
-2. **Cláusulas** — ¿la cita de la cláusula VI.1.N está correcta para cada
-   nomenclatura?
+### Hallazgos
 
-3. **Siglas** — ¿las siglas (DES, DIS, E, IMP, MAC, MIC, RR, SI, S, AM, R,
-   IV, IM, IE, TC, PC, PP, CC, CF, CMC, CV, CJ, 3-4, 4-5, 7-8) están bien
-   interpretadas? ¿Faltan otros tipos comunes en la práctica?
+| # | Cláusula | Key | Sigla | Color | Zona | Representación que falta |
+| --- | --- | --- | --- | --- | --- | --- |
+| — | VI.1.6 | `desgaste_oclusal_incisal` | DES | azul | recuadro | "DES" en azul en recuadro |
+| — | VI.1.14 | `edentulo_total` | — | azul | corona | Línea horizontal azul sobre coronas del maxilar edéntulo |
+| — | VI.1.15 | `fractura` | — | rojo | corona | Línea recta roja en sentido de la fractura |
 
-4. **Priorización para alpha.3** — de las 18 nomenclaturas marcadas como
-   ⏳, ¿cuáles son las 5 más usadas clínicamente y deberían entrar primero
-   en alpha.3?
+### Tratamientos
 
-5. **Cross-teeth (v0.4.0)** — ¿cuáles de las 6 cross-teeth son
-   imprescindibles en la práctica diaria? ¿el diastema y supernumerario
-   son comunes? ¿geminación/fusión y transposición son raras?
+| # | Cláusula | Key | Sigla | Color | Zona | Representación que falta |
+| --- | --- | --- | --- | --- | --- | --- |
+| — | VI.1.5 | `corona_temporal` | — | rojo | corona | Circunferencia roja alrededor de la corona |
+| — | VI.1.25 | `protesis_removible` | — | azul | sobre ápices | Dos líneas paralelas azul a nivel de los ápices |
+| — | VI.1.26 | `protesis_total` | — | azul | corona | Dos líneas paralelas azul sobre las coronas del maxilar |
+| — | VI.1.29 | `restauracion_temporal` | — | rojo | corona | Contorno rojo siguiendo forma de las superficies |
 
-6. **Cláusula VI.1.24 ausente del PDF** — ¿el odontólogo conoce qué
-   nomenclatura iba a estar ahí? ¿Es errata del documento del Colegio o
-   omisión intencional?
+### Anomalías por pieza
+
+| # | Cláusula | Key | Sigla | Color | Zona | Representación que falta |
+| --- | --- | --- | --- | --- | --- | --- |
+| — | VI.1.9 | `discromico` | DIS | azul | recuadro | "DIS" en azul en recuadro |
+| — | VI.1.10 | `ectopico` | E | azul | recuadro | "E" en azul en recuadro |
+| — | VI.1.11 | `clavija` | — | azul | recuadro | Triángulo azul circunscribiendo el número de la pieza |
+| — | VI.1.12 | `extruido` | — | azul | corona | Flecha azul dirigida hacia el plano oclusal |
+| — | VI.1.13 | `intruido` | — | azul | corona | Flecha vertical azul dirigida al ápice |
+| — | VI.1.17 | `giroversion` | — | azul | corona | Flecha curva azul siguiendo el sentido de la rotación |
+| — | VI.1.18 | `impactacion` | I | azul | recuadro | "I" en azul en recuadro |
+| — | VI.1.20 | `macrodoncia` | MAC | azul | recuadro | "MAC" en azul en recuadro |
+| — | VI.1.21 | `microdoncia` | MIC | azul | recuadro | "MIC" en azul en recuadro |
+| — | VI.1.22 | `migracion` | — | azul | corona | Flecha horizontal azul siguiendo el sentido de la migración |
+| — | VI.1.30 | `semi_impactacion` | SI | azul | recuadro | "SI" en azul en recuadro |
+
+## 🔒 v0.4.0 — Diferido (anomalías cross-teeth y aparatos ortodónticos)
+
+Estas nomenclaturas requieren un modelo de datos extendido (relaciones
+**entre piezas**) que llega en v0.4.0. Hoy el catálogo las marca como
+deshabilitadas con tooltip "Disponible en v0.4.0".
+
+### Anomalías entre piezas
+
+| # | Cláusula | Key | Sigla | Color | Descripción norma |
+| --- | --- | --- | --- | --- | --- |
+| — | VI.1.7 | `diastema` | — | azul | Paréntesis invertido azul entre las piezas dentarias |
+| — | VI.1.16 | `geminacion_fusion` | — | azul | Dos circunferencias azules interceptadas encerrando los números de las piezas involucradas |
+| — | VI.1.31 | `supernumerario` | S | azul | Letra "S" mayúscula encerrada en circunferencia azul, entre los ápices de las piezas adyacentes |
+| — | VI.1.32 | `transposicion` | — | azul | Dos flechas curvas azul entrecruzadas a la altura de los números de las piezas involucradas |
+
+### Aparatos ortodónticos
+
+| # | Cláusula | Key | Sigla | Color | Descripción norma |
+| --- | --- | --- | --- | --- | --- |
+| — | VI.1.1 | `aparato_orto_fijo` | — | azul | Cuadrados con cruz a nivel de los ápices, unidos con línea recta. Azul (buen estado) o rojo (mal estado) |
+| — | VI.1.2 | `aparato_orto_removible` | — | azul | Línea en zig-zag a la altura de los ápices del maxilar en tratamiento. Azul (buen estado) o rojo (mal estado) |
+
+## Nota sobre VI.1.24
+
+VI.1.24 está **ausente del PDF oficial** (la numeración salta de 1.23 a
+1.25). Documentado como `AUSENCIA_NORMATIVA_VI_1_24` en código.
+Pendiente confirmación con el Colegio Odontológico — ¿es errata o se
+omitió a propósito?
 
 ---
 
-## Referencias técnicas
+## Validación con el odontólogo
 
-- Catálogo en código: `xpertik_odontograma/profiles/peru/states.py` — clase
-  `PeruNomenclatura` (frozen dataclass) + tupla `CATALOG`
-- Validador estricto: `xpertik_odontograma/profiles/peru/validators.py` —
-  función `validate_peru_strict`
-- Render gráfico: `xpertik_odontograma/svg/renderer.py` — funciones
-  `_render_state_overlays`, `_face_fills`, `sigla_for_tooth`
-- Norma fuente: `docs/norms/norma-tecnica-odontograma-peru.pdf`
-- Análisis de conformidad completo: `NORMA_CUMPLIMIENTO.md`
+1. **De las 8 implementadas hoy**: ¿la representación gráfica matchea lo
+   que un profesional espera ver al leer un odontograma conforme a la
+   norma peruana? Probar cada una en el admin con un caso clínico.
+
+2. **De las 18 pendientes (alpha.3)**: ¿cuáles son las **5 más usadas en
+   la práctica clínica diaria** y deberían entrar primero?
+
+3. **Cross-teeth (v0.4.0)**: ¿el diastema y supernumerario se usan
+   frecuentemente? ¿Geminación / fusión / transposición son raras?
+
+4. **Cláusula VI.1.24 ausente**: ¿el odontólogo conoce qué nomenclatura
+   iba a estar ahí?
+
+5. **Lo que falta**: ¿hay algo crítico que NO esté en el catálogo de 32?
+
+---
+
+## feedback
+
+observaciones en `docs/feedback/alpha1.md`
