@@ -217,9 +217,17 @@ def _render_quadrant_dividers(width: int, height: int, n_cols: int) -> str:
     inferior (cuadrantes 4 + 3). The intersection marks the midline +
     occlusal plane, matching the Anexo II reference layout.
     """
-    # Vertical: in the middle of MIDLINE_GAP, halfway across n_cols teeth.
+    # Vertical: centered in the MIDLINE_GAP that separates the right-side
+    # and left-side quadrants. The right half ends at
+    # ``half * (TW + TG) - TG`` (last tooth's right edge) and the left half
+    # starts at ``half * (TW + TG) + MIDLINE_GAP``; the midline sits in the
+    # middle of that visible gap.
     half_cols = n_cols // 2
-    x_mid = half_cols * (TOOTH_WIDTH + TOOTH_GAP) + (MIDLINE_GAP // 2)
+    x_mid = (
+        half_cols * (TOOTH_WIDTH + TOOTH_GAP)
+        - (TOOTH_GAP // 2)
+        + (MIDLINE_GAP // 2)
+    )
 
     # Horizontal: middle of the ARCADE_GAP between the two arcadas.
     y_mid = RECUADRO_HEIGHT + ARCADE_GAP + TOOTH_HEIGHT + (ARCADE_GAP // 2)
@@ -621,8 +629,12 @@ def _render_arcade(
     parts: list[str] = [
         f'<g class="xp-arcada xp-{arcada}" transform="translate(0 {y})">'
     ]
+    half = len(teeth) // 2
     for i, fdi in enumerate(teeth):
-        tx = i * (TOOTH_WIDTH + TOOTH_GAP)
+        # Apply MIDLINE_GAP between the right-side and left-side quadrants
+        # so the divider line falls between teeth 11|21 (or 41|31) instead
+        # of clipping into one of them.
+        tx = i * (TOOTH_WIDTH + TOOTH_GAP) + (MIDLINE_GAP if i >= half else 0)
         entry = value.get(str(fdi)) or value.get(fdi) or {}
         parts.append(f'<g class="xp-tooth-slot" transform="translate({tx} 0)">')
         parts.append(
@@ -655,8 +667,12 @@ def _render_recuadros(
     parts: list[str] = [
         f'<g class="xp-recuadros" transform="translate(0 {y})">'
     ]
+    half = len(teeth) // 2
     for i, fdi in enumerate(teeth):
-        tx = i * (TOOTH_WIDTH + TOOTH_GAP)
+        # Same MIDLINE_GAP offset as the arcade so recuadros stay aligned
+        # vertically with their tooth slots and the divider falls cleanly
+        # between cuadrantes.
+        tx = i * (TOOTH_WIDTH + TOOTH_GAP) + (MIDLINE_GAP if i >= half else 0)
         entry = value.get(str(fdi)) or value.get(fdi) or {}
         sigla_text = sigla_for_tooth(entry, catalog_by_zona)
         if readonly:
