@@ -59,8 +59,10 @@ __all__ = [
 
 #: Width in user units of a single tooth slot.
 TOOTH_WIDTH: int = 50
-#: Height in user units of the silhouette (corona + raíz).
-TOOTH_HEIGHT: int = 90
+#: Height in user units of the tooth slot (silhouette + FDI label area).
+#: The silhouette itself is 80 units tall (viewBox of every <symbol>); the
+#: extra 25 leaves clear room for the FDI label below the raíz.
+TOOTH_HEIGHT: int = 105
 #: Horizontal gap between adjacent teeth.
 TOOTH_GAP: int = 4
 #: Height of a single Anexo II recuadro (sigla cell above/below an arcade).
