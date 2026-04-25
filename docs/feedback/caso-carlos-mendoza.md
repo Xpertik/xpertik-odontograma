@@ -82,9 +82,7 @@ parcial, periodoncia incipiente y patología endodóntica.
 
 ---
 
-## Validación con el odontólogo
-
-Antes de pasar a alpha.2, validar con el profesional clínico:
+## Validación:
 
 1. ✅ **Nomenclaturas y cláusulas correctas** — ¿la cita de la cláusula
    VI.1.N en la norma técnica del Colegio Odontológico es correcta para
@@ -109,28 +107,6 @@ Antes de pasar a alpha.2, validar con el profesional clínico:
 
 ---
 
-## Cómo registrar el feedback
+## feedback
 
-Anotar las observaciones del odontólogo en `docs/feedback/alpha1.md`
-(documento separado, índice de feedback global). Si el dentista pide
-ajustes específicos a un hallazgo de este caso, citarlo por pieza
-(ej: "diente 36 — la línea de TC no se distingue de fractura para mi"). Esto
-alimenta el scope de **v0.3.0-alpha.2**.
-
----
-
-## Otros casos clínicos del seed
-
-`manage.py seed_demo` también crea estos perfiles (documentos por venir):
-
-| Caso | Foco clínico |
-| --- | --- |
-| María González (32 años) | Caries múltiples — 7 piezas con lesiones en distintas caras |
-| Juan Pérez (45 años) | Restauraciones variadas — AM, R, IV en 8 piezas |
-| Ana Ramírez (58 años) | Rehabilitación protésica — 6 coronas + 3 implantes |
-| Carlos Mendoza (67 años) | **(este documento)** Adulto mayor complejo |
-| Pedro Soto (52 años) | Periodontitis avanzada — 9 piezas con movilidad |
-| Lucía Vacante | Vacío — para registro nuevo desde cero |
-
-Si la validación de Carlos Mendoza sale bien con el odontólogo, generar los
-documentos análogos para los otros 4 perfiles.
+observaciones en `docs/feedback/alpha1.md`
